@@ -11,9 +11,9 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "all": true,
       "shell": {
-        "all": false,
+        "all": true,
         "open": true
       }
     },
@@ -31,7 +31,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": "all",
+      "targets": "nsis",
       "identifier": "com.tauriii.dev",
       "icon": [
         "icons/32x32.png",
