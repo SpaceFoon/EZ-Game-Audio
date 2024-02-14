@@ -18,4 +18,11 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "./src/_mantine";`,
+      },
+    },
+  },
 }));
