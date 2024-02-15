@@ -49,6 +49,9 @@ devDependencies:
   '@tauri-apps/cli':
     specifier: ^1.5.8
     version: 1.5.9
+  '@types/prop-types':
+    specifier: ^15.7.11
+    version: 15.7.11
   '@types/react':
     specifier: ^18.2.15
     version: 18.2.55
@@ -68,7 +71,7 @@ devDependencies:
     specifier: ^7.0.1
     version: 7.0.1(postcss@8.4.35)
   typescript:
-    specifier: ^5.0.2
+    specifier: ^5.3.3
     version: 5.3.3
   vite:
     specifier: ^5.0.0

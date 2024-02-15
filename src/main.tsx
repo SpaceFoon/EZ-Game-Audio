@@ -12,7 +12,9 @@ import React
 //,{ useState } 
 from "react";
 import ReactDOM from "react-dom/client";
-import { MantineProvider, createTheme } from '@mantine/core';
+import { MantineProvider
+  // , createTheme
+ } from '@mantine/core';
 // other css files are required only if
 // you are using components from the corresponding package
 import '@mantine/core/styles.css';
@@ -71,9 +73,9 @@ import "./App.css";
 //         ],
 //       }
 //   });
-const darkTheme = createTheme({
+// const darkTheme = createTheme({
   
-})
+// })
 //In order to take advantage of React 18's concurrent features you'll
 //need to use the new root API for client rendering.
 function AppWrapper() {

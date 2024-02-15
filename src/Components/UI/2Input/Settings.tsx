@@ -1,5 +1,4 @@
 //Settings.jsx
-import PropTypes from 'prop-types';
 const Settings = ({ settings }) => {
   
     let { filePath, inputType, outputType } = settings;
@@ -17,11 +16,5 @@ const Settings = ({ settings }) => {
     </div>
   );
 };
-Settings.propTypes = {
-  settings: PropTypes.shape({
-    filePath: PropTypes.string.isRequired,
-    inputType: PropTypes.string.isRequired,
-    outputType: PropTypes.string.isRequired,
-  }).isRequired,
-};
+
 export default Settings;

@@ -1,8 +1,16 @@
-//CheckBoxes.jsx
+/**
+ * checkBoxes.tsx handles the input and output checkboxes
+ * @param {string[]} inputType - an array of input file types
+ * @param {string[]} outputType - an array of output file types
+ * @param {(value: string) => void} setInputType - a function to update the inputType state
+ * @param {(value: string) => void} setOutputType - a function to update the outputType state
+ */
 import { useState } from 'react';
 import InputFormatCheckboxComponent from "./InputFormatComponent"
 import OutputFormatComponent from "./OutputFormatComponent"
-import propTypes from 'prop-types';
+
+
+
 
 const CheckBoxes = ({inputType, outputType, setInputType, setOutputType}) => {
 const [allInputsChecked, setAllInputsChecked] = useState(false);
@@ -17,9 +25,12 @@ const handleAllInputsChange = () => {
   setAllInputsChecked(!allInputsChecked);
 };
 
-  const handleInputChange = (value) => {
+/**
+   * @param {string[]} value - a file type to add or remove from the inputType state
+   */
+  const handleInputChange = (value:[]) => {
     console.log('file type change:', value);
-    setInputType((current) =>
+    setInputType((current:[]) =>
       current.includes(value) ? current.filter((x) => x !== value) : [...current, value]
     );
   };
@@ -31,7 +42,9 @@ const handleAllOutputChange = () => {
   }
   setAllOutputChecked(!allOutputChecked);
 };
-
+ /**
+   * @param {string[]} value - a file type to add or remove from the outputType state
+   */
   const handleOutputChange = (value) => {
     console.log('output type change:', value);
     setOutputType((current) =>
@@ -132,10 +145,5 @@ return (
         </>  
 )
 }
-CheckBoxes.propTypes = {
-  inputType: propTypes.array,
-  outputType: propTypes.array,
-  setInputType: propTypes.func,
-  setOutputType: propTypes.func
-}
+
 export default CheckBoxes;

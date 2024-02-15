@@ -4,7 +4,7 @@ import { Command } from "@tauri-apps/api/shell";
 import { invoke } from "@tauri-apps/api/tauri";
 import { join } from "@tauri-apps/api/path";
 //import { path } from "@tauri-apps/api/path";
-export default async function convertAudio(settings, files) {
+export default async function convertAudio(settings:[], files:[string]) {
   const failedFiles = [];
   const ffmpegPath = Command.sidecar("/src/bin/ffmpeg");
   console.log("ffmpegPath", ffmpegPath);

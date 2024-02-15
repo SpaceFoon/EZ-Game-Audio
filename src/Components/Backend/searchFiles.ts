@@ -2,14 +2,15 @@
 // recursive search for files with given extensions
 import { readDir } from "@tauri-apps/api/fs";
 import { deleteDuplicateFiles } from "./deleteDups";
-export default async function searchFiles(searchPath, fileExtensions) {
+export default async function searchFiles(searchPath:any, fileExtensions:any) {
   try {
     console.log("Search Path:", searchPath);
     console.log("File Extensions:", fileExtensions);
 
     const allFiles = [];
 
-    const walk = (arr) => {
+    const walk = (arr:any) => {
+      
       for (const { name, path, children } of arr) {
         if (
           !children &&

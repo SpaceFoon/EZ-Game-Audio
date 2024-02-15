@@ -1,3 +1,8 @@
+/**
+ * Renders the application header with the given props.
+ * @param {boolean} isDarkMode - Whether the application is in dark mode or not.
+ * @returns {JSX.Element} The application header.
+ */
 import { Grid } from '@mantine/core';
 import  SwitchTheme from './SwitchTheme';
 
