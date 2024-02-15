@@ -9,11 +9,39 @@
     "productName": "EZ-Game-Audio",
     "version": "0.0.0"
   },
-  "tauri": {
+    "tauri": {
     "allowlist": {
       "all": true,
+      "os": {
+        "all": true
+
+      },
+       "fs": {
+        "all": true,
+        "scope": ["**"],
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "copyFile": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "exists": true
+      },
+      "dialog": {
+        "all": true, 
+        "ask": true, 
+        "confirm": true, 
+        "message": true, 
+        "open": true, 
+        "save": true 
+      },
       "shell": {
         "all": true,
+        "scope": [{"name": "src/bin/ffmpeg", "sidecar": true}],
+        "execute": true,
+        "sidecar": true,
         "open": true
       }
     },
