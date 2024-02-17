@@ -2,108 +2,135 @@
 import { join, dirname, basename, extname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
 
-export default async function createConversionList(settings, files) {
-  console.log("createConversionList", settings, files);
-  const outputFormats = settings.outputType.split(", ");
-  console.log("outputFormats", outputFormats);
-  //const inputFile = files.inputFiles;
+const { existsSync } = require("fs");
+const { join, basename, extname, dirname, normalize } = require("path");
+const chalk = require("chalk");
+const { getAnswer, settings } = require("./utils");
+
+//Create final list of files to convert by asking user for each conflicting file
+const createConversionList = async (files) => {
   const conversionList = [];
-
-  //Loop to make list of full output filenames from input files and settings.
+  let response = null;
   for (const inputFile of files) {
-    for (const outputFormat of outputFormats) {
-      let outputFile = `${await join(
-        await dirname(inputFile),
-        await basename(inputFile, await extname(inputFile))
-      )}${outputFormat}`;
-      let duplicate = false;
-      if (await exists(outputFile)) {
-        if (inputFile === outputFile) continue;
-        duplicate = true;
-        //this file gets flagged for duplicate dialog
-      }
-      console.log("inputFile", `${inputFile}`);
-      console.log("outputFile", `${outputFile}`);
+    for (const outputFormat of settings.outputFormats) {
+      let outputFile = `${join(
+        dirname(inputFile),
+        basename(inputFile, extname(inputFile))
+      )}.${outputFormat}`;
+      let outputFileCopy = `${join(
+        dirname(inputFile),
+        `${basename(inputFile, extname(inputFile))} copy (1)`
+      )}.${outputFormat}`;
 
+      //yes these are both required
+      if (inputFile == outputFile) {
+        continue;
+      }
+      if (inputFile.toLowerCase() === outputFile.toLowerCase()) {
+        continue;
+      }
+
+      const responseActions = {
+        o: () => {
+          return (response = null);
+        },
+        oa: () => {
+          if (!existsSync(outputFile)) return;
+          /* Nothing to do as default is overwrite */
+        },
+        r: () => {
+          outputFile = outputFileCopy;
+          return (response = null);
+        },
+        ra: () => {
+          if (!existsSync(outputFile)) return;
+          outputFile = outputFileCopy;
+        },
+        s: () => {
+          outputFile = "skipped! ⏭️";
+          return (response = null);
+        },
+        sa: () => {
+          if (!existsSync(outputFile)) return;
+          outputFile = "skipped! ⏭️";
+        },
+      };
+      switch (response) {
+        case "":
+          console.error("response was empty:", response);
+          break;
+        case "ra":
+          responseActions["ra"]();
+          break;
+        case "sa":
+          responseActions["sa"]();
+          break;
+        case "oa":
+          console.log(
+            chalk.red("🔺🚩OVERWRITE FILE🚩"),
+            chalk.yellow(outputFile, "🔺")
+          );
+          break;
+        default:
+          while (true) {
+            if (!response) {
+              if (existsSync(outputFile)) {
+                console.warn(`${outputFile} already exists!`);
+                response = await getAnswer(
+                  chalk.blue.bold(
+                    `\n[O]verwrite, [R]ename or [S]kip? 👀 Add 'a' for all (e.g., oa, ra, sa)`
+                  )
+                );
+                response = response.trim().toLowerCase();
+
+                if (responseActions[response]) {
+                  responseActions[response]();
+                  break;
+                } else {
+                  response = null;
+                  console.warn("\n⚠️Invalid selection! Try again⚠️");
+                }
+              } else {
+                //console.warn(outputFile);
+                break;
+              }
+            }
+          }
+      }
       conversionList.push({
         inputFile,
         outputFile,
         outputFormat,
-        duplicate,
       });
     }
   }
-  console.log("createConverstionList Pending conversion:", conversionList);
-  return conversionList; //.filter((x) => x.outputFile !== "skipped!");
-  // const outputFileCopy = `${await join(
-  //   await dirname(inputFile),
-  //   `${await basename(inputFile, await extname(inputFile))} copy (1)`
-  // )}${outputFormat}`;
+  while (true) {
+    const numbered = conversionList.map(
+      (x, index) => `🔊 ${index + 1} ${x.outputFile}`
+    );
+    console.log(
+      chalk.cyanBright(
+        "\n🔄 Pending conversion 🔄",
+        conversionList.length,
+        "files\n",
+        numbered.join("\n")
+      )
+    );
+    const accept_answer = await getAnswer(
+      chalk.blueBright(
+        '\n✏️ This is the list of files to be converted. Accept? Type "yes" ✅ or "no" ❌:  '
+      )
+    );
 
-  // const responseActions = {
-  //   o: () => {
-  //     return (response = null);
-  //   },
-  //   oa: () => {
-  //     /* Nothing to do as default is overwrite with ffmpeg */
-  //   },
-  //   r: () => {
-  //     outputFile = outputFileCopy;
-  //     return (response = null);
-  //   },
-  //   ra: () => {
-  //     outputFile = outputFileCopy;
-  //   },
-  //   s: () => {
-  //     outputFile = "skipped!";
-  //     return (response = null);
-  //   },
-  //   sa: () => {
-  //     outputFile = "skipped!";
-  //   },
-  // };
-  // switch (response) {
-  //   // case null:
-  //   //   console.warn("response is null in creatConverstionList");
-  //   //   break;
-  //   case "":
-  //     break;
-  //   case "ra":
-  //     responseActions["ra"]();
-  //     break;
-  //   case "sa":
-  //     responseActions["sa"]();
-  //     break;
-  //   case "oa":
-  //     console.log("OVERWRITE FILE", outputFile);
-  //     break;
-  //   default:
-  //     while (true) {
-  //       console.log("outputFile", outputFile);
-  //       if (await exists(outputFile)) {
-  //         response = DuplicateDialog(outputFile);
-  //         //response = response.trim().toLowerCase();
-  //         if (responseActions[response]) {
-  //           responseActions[response]();
-  //           break;
-  //         } else {
-  //           response = null;
-  //           console.log("You did not enter a valid selection, try again.");
-  //         }
-  //       } else break;
-  //     }
-  // }
-
-  // while (true) {
-
-  // const accept_answer = await ConfirmDialog(
-  //   "This is the list of files to be converted. Accept? Type yes or no: "
-  // );
-  // if (/^no$/i.test(accept_answer)) throw new Error("Conversion cancelled");
-  // if (!/^yes$/i.test(accept_answer)) {
-  //   console.warn('invalid input, please use "yes" or "no"');
-  //   continue;
-  // }
-
-  // }
-}
+    if (/^no$/i.test(accept_answer)) {
+      console.log("🚫 Conversion cancelled. Exiting program 🚫");
+      process.exit(0);
+    }
+    if (!/^yes$/i.test(accept_answer)) {
+      console.warn('⚠️ Invalid input, please type "yes" or "no" ⚠️');
+      continue;
+    }
+    return conversionList.filter((x) => x.outputFile !== "skipped! ⏭️");
+  }
+};
+module.exports = createConversionList;

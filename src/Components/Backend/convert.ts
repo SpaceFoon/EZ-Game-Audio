@@ -43,74 +43,123 @@ export default async function convertAudio(settings:[], files:[string]) {
   return { failedFiles, Finished: failedFiles.length === 0 };
 }
 
-// `Failed to convert ${getFilename(inputFile)} to ${getFilename(outputFile
-// )}`);
-// await new Promise((resolve, reject) => {
-//   const formatConfig = {
-//     ogg: { codec: "libopus", additionalOptions: ["-b:a", "192k"] },
-//     //https://slhck.info/video/2017/02/24/vbr-settings.html
-//     //libopus 	-b:a 	6–8K (mono) 	– 	96K (for stereo) 	– 	-vbr on is default, -b:a just sets the target, see
-//     mp3: { codec: "libmp3lame", additionalOptions: ["-q:a", "3"] },
-//     //libmp3lame 	-q:a 	9 	0 	4 	2 (~190kbps) 	Corresponds to lame -V.
-//     wav: { codec: "pcm_s16le" },
-//     m4a: { codec: "aac", additionalOptions: ["-q:a", `1.0`] },
-//     //aac 	-q:a 	0.1 	2 	? 	1.3 (~128kbps) 	Is "experimental and [likely gives] worse results than CBR" according to FFmpeg Wiki. Ranges from 18 to 190kbps.
-//     flac: {
-//       codec: "flac",
-//       additionalOptions: ["-compression_level", "8"],
-//     },
-//   };
+//Creaters workers to conver files
 
-// const ffmpegCommand = Command(
-//   join(__dirname, "ffmpeg.exe"),
-//   [
-//     //'-loglevel', 'debug',
-//     "-i",
-//     `"${inputFile}"`,
-//     "-c:a",
-//     codec,
-//     ...additionalOptions,
-//     "-y",
-//     `"${outputFile}"`,
-//   ],
-//   { shell: true }
-// );
+const { Worker } = require("worker_threads");
+const { performance } = require("perf_hooks");
+const { cpus } = require("os");
+const chalk = require("chalk");
+const { isFileBusy, addToLog, settings } = require("./utils");
 
-//         ffmpegCommand.on("close", (code) => {
-//           if (code === 0) {
-//             console.log(
-//               `Conversion successful for ${getFilename(
-//                 inputFile
-//               )} to ${getFilename(outputFile)}`
-//             );
-//             failedFiles.push({ inputFile, outputFile, outputFormat });
-//             resolve();
-//           }
-//         });
+const convertFiles = async (files) => {
+  const jobStartTime = performance.now();
+  await isFileBusy(`${settings.filePath}/logs.csv`);
+  await isFileBusy(`${settings.filePath}/error.csv`);
+  try {
+    var cpuNumber = cpus().length;
+  } catch {
+    var cpuNumber = 8;
+    console.warn(
+      "🚨🚨⛔ Could not detect amount of CPU cores!!! Setting to 8 ⛔🚨🚨"
+    );
+  }
 
-//         ffmpegCommand.on("error", (err) => {
-//           console.error(
-//             `Error during conversion for ${getFilename(
-//               inputFile
-//             )} to ${getFilename(outputFile)}.`
-//           );
-//           failedFiles.push({ inputFile, outputFile, outputFormat });
-//           reject(err);
-//         });
-//       });
-//       await new Promise((resolve) => setTimeout(resolve, 1000));
-//     } catch (error) {
-//       console.error(
-//         `Failed to convert ${getFilename(inputFile)} to ${getFilename(
-//           outputFile
-//         )}. Retrying...`
-//       );
-//       await new Promise((resolve) => setTimeout(resolve, 1000));
-//     }
-//   };
-//   for (const { inputFile, outputFile, outputFormat } of files) {
-//     await convertFiles(inputFile, outputFile, outputFormat);
-//   }
+  const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
+  const failedFiles = [];
+  const successfulFiles = [];
+  console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
+  console.log("   Using", cpuNumber, "concurrent 🧵 threads");
 
-//   console.log("Failed files:", failedFiles);
-// }
+  const processFile = async (file, workerCounter, task, tasksLeft) => {
+    const workerStartTime = performance.now();
+    console.log(
+      chalk.cyanBright(
+        `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
+      )
+    );
+
+    return new Promise((resolve, reject) => {
+      // console.log("m--dir", __dirname);
+      const worker = new Worker(`${__dirname}/converterWorker.js`, {
+        workerData: file,
+      });
+
+      worker.on("message", (message) => {
+        if (message.type === "stderr") {
+          console.error("ERROR MESSAGE FROM FFMPEG", message.data);
+          //console.warn(`filepath`, __dirname, __filename);
+          addToLog(message, file);
+          return;
+        }
+        if (message.type === "code") {
+          const workerEndTime = performance.now();
+          const workerCompTime = workerEndTime - workerStartTime;
+          addToLog(message, file);
+          if (message.data === 0) {
+            successfulFiles.push(file);
+            console.log(
+              chalk.greenBright(
+                `\n🛠️👷‍♂️ Worker`,
+                workerCounter,
+                `finished task`,
+                task,
+
+                `\n   Input"${file.inputFile}\n   Output"${
+                  file.outputFile
+                }✅\n   in ${workerCompTime.toFixed(0)} milliseconds🕖`
+              )
+            );
+            resolve();
+          } else if (message.data !== 0) {
+            if (!failedFiles[file]) {
+              failedFiles.push(file);
+            }
+            console.error(
+              // chalk.bgRed(
+              "\n🚨🚨⛔ Worker",
+              workerCounter,
+              "did not finish file ⛔🚨🚨: ",
+              file.outputFile,
+              "🔇"
+              // )
+            );
+            resolve();
+          }
+        }
+      });
+      worker.on("error", (code) => {
+        console.error(`🚨🚨⛔ Worker had an error with code:`, code, "⛔🚨🚨");
+        reject(code);
+      });
+
+      worker.on("exit", (code) => {});
+    });
+  };
+
+  // Worker Manger
+  const workerPromises = [];
+  let workerCounter = 0;
+  let task = 0;
+  for (let i = 0; i < maxConcurrentWorkers; i++) {
+    workerPromises.push(
+      (async () => {
+        while (files.length > 0) {
+          const file = files.pop();
+          try {
+            let tasksLeft = files.length;
+            task++;
+            workerCounter++;
+            if (workerCounter > 8) workerCounter = workerCounter - 8;
+            await processFile(file, workerCounter, task, tasksLeft);
+          } catch (error) {
+            console.error("ERROR", error);
+          }
+        }
+      })()
+    );
+  }
+
+  await Promise.all(workerPromises);
+  return { failedFiles, successfulFiles, jobStartTime };
+};
+module.exports = convertFiles;

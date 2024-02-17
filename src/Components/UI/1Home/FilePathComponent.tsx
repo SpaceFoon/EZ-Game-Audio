@@ -1,11 +1,18 @@
-//FilePathComponent,jsx
+/**
+ * FilePathComponent.tsx Renders the file path input field and the button to select a folder.
+ * @param {string} filePath - the current file path
+ * @param {function} setFilePath - a function to update the file path state
+ */
 
 import propTypes from 'prop-types';
 import {handleSelectFolder} from '../../Backend/folderSelect'
 
+interface Props {
+  filePath: string;
+  setFilePath: (filePath: string) => void;
+}
 
-
-const FilePathComponent = ({ filePath, setFilePath}) => {
+const FilePathComponent: React.FC<Props> = ({ filePath, setFilePath}) => {
     const handleSelect = async () => {
       await handleSelectFolder({filePath, setFilePath});
     };
