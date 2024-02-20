@@ -10,6 +10,7 @@ import { audioDir } from '@tauri-apps/api/path';
 import FilePathComponent from '../Components/UI/1Home/FilePathComponent';
 import CheckBoxes from '../Components/UI/1Home/CheckBoxes';
 import StartButton from "../Components/UI/1Home/StartButton";
+import searchFiles from "../Components/Backend/searchFiles";
 /**
  * This function is the main component of the application, which is the home page.
  * @returns {JSX.Element}
@@ -67,6 +68,7 @@ return (
 </div>
     <div className="container">
     <StartButton
+    searchFiles={searchFiles}
       filePath={filePath}
       inputType={inputType}
       outputType={outputType}

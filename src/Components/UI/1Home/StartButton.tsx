@@ -22,7 +22,7 @@ interface Props {
   outputType: string[];
   isInputTypeEmpty: boolean;
   isOutputTypeEmpty: boolean;
-  searchFiles: (filePath: string, inputType: string[]) => Promise<{ deduped?: string[]; removed?: string[]; }>;
+  searchFiles: (filePath: string, inputType: string[]) => Promise<{ deduped: string[]; removed?: string[]; }>;
 }
 const StartButton: React.FC<Props> = ({
     filePath, inputType, outputType, isInputTypeEmpty, isOutputTypeEmpty}

@@ -1,12 +1,12 @@
 
 import { readDir } from "@tauri-apps/api/fs";
-import { basename, join, extname, dirname } from "@tauri-apps/api/path";
+import path from "@tauri-apps/api/path";
 import { Command } from "@tauri-apps/api/shell";
 
 // converterWorker.js
-const { spawn } = require("child_process");
-const { workerData, parentPort } = require("worker_threads");
-const path = require("path");
+// const { spawn } = require("child_process");
+// const { workerData, parentPort } = require("worker_threads");
+// const path = require("path");
 const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
   // console.log("process.env.ComSpec ", process.env.ComSpec);
   // console.log("DIRNAME worker", process.cwd(), __dirname, __filename);

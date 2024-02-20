@@ -1,5 +1,9 @@
 //Settings.jsx
-const Settings = ({ settings }) => {
+interface setting {
+
+}
+
+const Settings = ({ settings}) => {
   
     let { filePath, inputType, outputType } = settings;
 

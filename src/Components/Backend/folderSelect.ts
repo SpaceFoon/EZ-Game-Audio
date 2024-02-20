@@ -22,7 +22,7 @@ export async function handleSelectFolder({ currentFilePath, setFilePath }:
       defaultPath: defaultPath
     });
     if (!selectedPath) return;
-    setFilePath(selectedPath[0]);
+    setFilePath(selectedPath as string);
   } catch (error) {
     console.error("Error selecting folder:", error);
   }

@@ -4,57 +4,58 @@ import { Command } from "@tauri-apps/api/shell";
 import { invoke } from "@tauri-apps/api/tauri";
 import { join } from "@tauri-apps/api/path";
 //import { path } from "@tauri-apps/api/path";
-export default async function convertAudio(settings:[], files:[string]) {
-  const failedFiles = [];
-  const ffmpegPath = Command.sidecar("/src/bin/ffmpeg");
-  console.log("ffmpegPath", ffmpegPath);
-  const convertFiles = async (inputFile, outputFile, outputFormat) => {
-    try {
-      await window.tauri.invoke("convert_audio", {
-        input_file: inputFile,
-        output_file: outputFile,
-        output_format: codec,
-        additional_options: additionalOptions,
-      });
-      console.log(
-        `Conversion successful for ${getFilename(inputFile)} to ${getFilename(
-          outputFile
-        )}`
-      );
-    } catch (error) {
-      failedFiles.push({ inputFile, outputFile, outputFormat });
-      console.error("failed", error);
-    }
 
-    const formatInfo = formatConfig[outputFormat];
+// export default async function convertAudio(settings:[], files:[string]) {
+//   const failedFiles = [];
+//   const ffmpegPath = Command.sidecar("/src/bin/ffmpeg");
+//   console.log("ffmpegPath", ffmpegPath);
+//   const convertFiles = async (inputFile, outputFile, outputFormat) => {
+//     try {
+//       await window.tauri.invoke("convert_audio", {
+//         input_file: inputFile,
+//         output_file: outputFile,
+//         output_format: codec,
+//         additional_options: additionalOptions,
+//       });
+//       console.log(
+//         `Conversion successful for ${getFilename(inputFile)} to ${getFilename(
+//           outputFile
+//         )}`
+//       );
+//     } catch (error) {
+//       failedFiles.push({ inputFile, outputFile, outputFormat });
+//       console.error("failed", error);
+//     }
 
-    if (!formatInfo) {
-      console.error("Unsupported output format:", outputFormat);
-      return;
-    }
+//     const formatInfo = formatConfig[outputFormat];
 
-    const { codec, additionalOptions = [] } = formatInfo;
-  };
+//     if (!formatInfo) {
+//       console.error("Unsupported output format:", outputFormat);
+//       return;
+//     }
 
-  async function getFilename(filePath) {
-    const match = filePath.match(/[^\\]+$/);
-    return match ? match[0] : "unknown";
-  }
-  return { failedFiles, Finished: failedFiles.length === 0 };
-}
+//     const { codec, additionalOptions = [] } = formatInfo;
+//   };
+
+//   async function getFilename(filePath) {
+//     const match = filePath.match(/[^\\]+$/);
+//     return match ? match[0] : "unknown";
+//   }
+//   return { failedFiles, Finished: failedFiles.length === 0 };
+// }
 
 //Creaters workers to conver files
 
-const { Worker } = require("worker_threads");
-const { performance } = require("perf_hooks");
-const { cpus } = require("os");
-const chalk = require("chalk");
-const { isFileBusy, addToLog, settings } = require("./utils");
+// const { Worker } = require("worker_threads");
+// const { performance } = require("perf_hooks");
+// const { cpus } = require("os");
+// const chalk = require("chalk");
+// const { isFileBusy, addToLog, settings } = require("./utils");
 
 const convertFiles = async (files) => {
   const jobStartTime = performance.now();
-  await isFileBusy(`${settings.filePath}/logs.csv`);
-  await isFileBusy(`${settings.filePath}/error.csv`);
+  // await isFileBusy(`${settings.filePath}/logs.csv`);
+  // await isFileBusy(`${settings.filePath}/error.csv`);
   try {
     var cpuNumber = cpus().length;
   } catch {
@@ -162,4 +163,4 @@ const convertFiles = async (files) => {
   await Promise.all(workerPromises);
   return { failedFiles, successfulFiles, jobStartTime };
 };
-module.exports = convertFiles;
+export default convertFiles;

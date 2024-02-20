@@ -9,9 +9,6 @@ import { useState } from 'react';
 import InputFormatCheckboxComponent from "./InputFormatComponent"
 import OutputFormatComponent from "./OutputFormatComponent"
 
-
-
-
 const CheckBoxes = ({inputType, outputType, setInputType, setOutputType}) => {
 const [allInputsChecked, setAllInputsChecked] = useState(false);
 const [allOutputChecked, setAllOutputChecked] = useState(false);
