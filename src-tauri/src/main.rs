@@ -6,6 +6,8 @@
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+fn converter(name: &str) -> String {}
+fn convert(name: &str) -> String {}
 
 fn main() {
     tauri::Builder::default()

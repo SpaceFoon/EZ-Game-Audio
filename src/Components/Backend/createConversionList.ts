@@ -9,10 +9,14 @@
 
 import { join, dirname, basename, extname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
+interface Settings {
+  outputType: string; // Add more properties as needed
+}
 
-export default async function createConversionList(settings, files) {
+export default async function createConversionList(settings:Settings, files:string[]) {
   console.log("createConversionList", settings, files);
   const outputFormats = settings.outputType.split(", ");
+
   console.log("outputFormats", outputFormats);
   const conversionList = [];
 
@@ -27,9 +31,6 @@ export default async function createConversionList(settings, files) {
         if (inputFile === outputFile) continue;
         duplicate = true;
         //this file gets flagged for duplicate dialog
-
-
-
       }
       console.log("inputFile", `${inputFile}`);
       console.log("outputFile", `${outputFile}`);

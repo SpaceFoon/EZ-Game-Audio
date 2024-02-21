@@ -1,34 +1,55 @@
 // ConvertButton.jsx
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import convertAudio from '../../Backend/convert';
+import PropTypes from 'prop-types';
+import convertAudio from '../../Backend/convert.ts.bak';
 import Loading from '../Loading';
-import DuplicateWarning from './DuplicateWarning'
-// Default values shown  
+import DuplicateWarning from './DuplicateWarning';
 
+interface Settings {
+    [key: string]: any; // Define the type for settings as needed
+}
 
-const ConvertButton = (settings, conversionList) => {
+interface ConversionFile {
+    inputFile: string;
+    outputFile: string;
+    duplicate?: boolean;
+}
+
+interface Props {
+    settings: Settings;
+    conversionList: ConversionFile[];
+}
+
+const ConvertButton: React.FC<Props> = ({ settings, conversionList }) => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
-    const [conflicts, setConflicts] = useState(0);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [conflicts, setConflicts] = useState<number>(0);
+    const [failedFiles, setFailedFiles] = useState<ConversionFile[]>([]);
+    const [finished, setFinished] = useState<boolean>(false);
 
     const handleClick = async () => {
-        if (conflicts > 0){
-            return (
-            <DuplicateWarning/>
-            )
-        }else{
-        setLoading(true);
-        const {failedFiles, Finished} = await convertAudio(settings, conversionList);
-        setLoading(false);
-        navigate("/Finished");
+        if (conflicts > 0) {
+            // Handle conflicts if there are any
+            return <DuplicateWarning />;
+        } else {
+            setLoading(true);
+            try {
+                await convertAudio(settings, conversionList);
+                setLoading(false);
+                setFailedFiles(failedFiles);
+                setFinished(Finished);
+                navigate("/Finished", { state: { failedFiles, Finished } });
+            } catch (error) {
+                console.error("Error converting audio:", error);
+                setLoading(false);
+            }
         }
     };
 
     return (
-       <div>
-             {loading ? (
+        <div>
+            {loading ? (
                 <Loading />
             ) : (
                 <button disabled={conflicts > 0} onClick={handleClick}>
@@ -38,7 +59,8 @@ const ConvertButton = (settings, conversionList) => {
         </div>
     );
 };
-PropTypes.ConvertButton = {
+
+ConvertButton.propTypes = {
     settings: PropTypes.object.isRequired,
     conversionList: PropTypes.array.isRequired,
 };
