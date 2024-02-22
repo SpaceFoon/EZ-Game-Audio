@@ -6,10 +6,12 @@
  */
 import { open } from "@tauri-apps/api/dialog";
 import { audioDir } from "@tauri-apps/api/path";
+import propTypes from 'prop-types';
 
 // In the future support copy and pasting source path
 // import { readText } from '@tauri-apps/api/clipboard'; Gets the clipboard content as plain text.
 // const clipboardText = await readText();
+
 
 export async function handleSelectFolder({ currentFilePath, setFilePath }:
   { currentFilePath: string; setFilePath: (path: string) => void }): Promise<void> {
@@ -27,3 +29,8 @@ export async function handleSelectFolder({ currentFilePath, setFilePath }:
     console.error("Error selecting folder:", error);
   }
 }
+
+handleSelectFolder.propTypes = {
+  currentFilePath: propTypes.string.isRequired,
+  setFilePath: propTypes.func.isRequired
+};

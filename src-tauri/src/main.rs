@@ -2,16 +2,19 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-fn converter(name: &str) -> String {}
-fn convert(name: &str) -> String {}
+// #[tauri::command]
+// fn greet(name: &str) -> String {
+//     format!("Hello, {}! You've been greeted from Rust!", name)
+// }
+//mod convert_files;
+//use convert_files;
 
-fn main() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
+// fn main() {
+//     tauri::Builder::default()
+//         // .invoke_handler(tauri::generate_handler![greet])
+//         // .run(tauri::generate_context!())
+//         // .expect("error while running tauri application");
+//         .invoke_handler(tauri::generate_handler![convert_files::convert_files])
+//         .run(tauri::generate_context!())
+//         .expect("error in the Rust part of the application");
+// }

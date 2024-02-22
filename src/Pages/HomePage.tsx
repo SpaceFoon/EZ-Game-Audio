@@ -33,23 +33,20 @@ const HomePage = (): JSX.Element =>{
   // Initialize default file path
   useEffect(() => {
     //Sets default filepath to Windows music folder.
-
 /**
  * This function sets the default filepath to the Windows music folder.
  * @returns {Promise<void>}
  */
-
-
     const setInitialFilePath = async (): Promise<void> => {
-      try {
-        let initialPath = await audioDir();
-        setFilePath(initialPath);
-      } catch (error) {
-        console.error('Error getting initial path:', error);
-      }
-    };
-    setInitialFilePath();
-  }, [])
+        try {
+          let initialPath = await audioDir();
+          setFilePath(initialPath);
+        } catch (error) {
+          console.error('Error getting initial path:', error);
+        }
+      };
+      setInitialFilePath();
+    }, [])
 
 return (
   <>
@@ -63,7 +60,6 @@ return (
       outputType={outputType}
       setInputType={setInputType}
       setOutputType={setOutputType}
-      //isInputTypeEmpty={isInputTypeEmpty}
     />
 </div>
     <div className="container">
