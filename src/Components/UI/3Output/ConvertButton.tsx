@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import convertAudio from '../../Backend/convert.ts.bak';
+import convertAudio from '../../Backend/converterWorker.ts';
 import Loading from '../Loading';
 import DuplicateWarning from './DuplicateWarning';
 

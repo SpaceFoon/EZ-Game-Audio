@@ -1,7 +1,7 @@
+// vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// https://vitejs.dev/config/
 export default defineConfig(async () => ({
   plugins: [react()],
 
@@ -25,4 +25,12 @@ export default defineConfig(async () => ({
       },
     },
   },
+
+  // Rollup options to exclude worker_threads from being bundled for browser environment
+  build: {
+    rollupOptions: {
+      external: ['worker_threads'],
+    },
+  },
 }));
+

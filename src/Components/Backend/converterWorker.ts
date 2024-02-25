@@ -1,17 +1,17 @@
-
-import { readDir } from "@tauri-apps/api/fs";
-import path from "@tauri-apps/api/path";
+// converterWorker.ts
+// Use ffmpeg to convert files
 import { Command } from "@tauri-apps/api/shell";
+// import { invoke } from "@tauri-apps/api/tauri";
+import { join } from "@tauri-apps/api/path";
+// import { workerData, parentPort } from "web";
 
-// converterWorker.js
-// const { spawn } = require("child_process");
-// const { workerData, parentPort } = require("worker_threads");
-// const path = require("path");
 const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
+  const myWorker = new Worker("worker.js");
+
   // console.log("process.env.ComSpec ", process.env.ComSpec);
   // console.log("DIRNAME worker", process.cwd(), __dirname, __filename);
   // console.log("inputFile", inputFile);
-  const ffmpegPath = path.join(process.cwd(), `\\ffmpeg.exe`);
+  const ffmpegPath = join(process.cwd(), `\\ffmpeg.exe`);
   //console.log("path worker", ffmpegPath);
   return new Promise((resolve, reject) => {
     const formatConfig = {
@@ -25,7 +25,7 @@ const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
     };
 
     const { codec, additionalOptions = [] } = formatConfig[outputFormat];
-    const ffmpegCommand = spawn(
+    const ffmpegCommand = new myWorker(
       `"${ffmpegPath}"`,
       [
         "-loglevel",
@@ -41,9 +41,9 @@ const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
         "-y", //Disable prompts
         `"${outputFile}"`,
       ],
-      {
-        shell: true,
-      }
+      // {
+      //   shell: true,
+      // }
     );
     ffmpegCommand.stderr.on("data", (data) => {
       parentPort.postMessage({ type: "stderr", data: data.toString() });
@@ -66,7 +66,4 @@ const runConversion = async () => {
   }
 };
 runConversion();
-module.exports = {
-  runConversion,
-  converterWorker,
-};
+export default runConversion

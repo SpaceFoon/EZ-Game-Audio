@@ -1,91 +1,52 @@
-// Use ffmpeg to convert files
-//import { spawn } from "child_process";
-import { Command } from "@tauri-apps/api/shell";
-import { invoke } from "@tauri-apps/api/tauri";
-import { join } from "@tauri-apps/api/path";
-//import { path } from "@tauri-apps/api/path";
-
-// export default async function convertAudio(settings:[], files:[string]) {
-//   const failedFiles = [];
-//   const ffmpegPath = Command.sidecar("/src/bin/ffmpeg");
-//   console.log("ffmpegPath", ffmpegPath);
-//   const convertFiles = async (inputFile, outputFile, outputFormat) => {
-//     try {
-//       await window.tauri.invoke("convert_audio", {
-//         input_file: inputFile,
-//         output_file: outputFile,
-//         output_format: codec,
-//         additional_options: additionalOptions,
-//       });
-//       console.log(
-//         `Conversion successful for ${getFilename(inputFile)} to ${getFilename(
-//           outputFile
-//         )}`
-//       );
-//     } catch (error) {
-//       failedFiles.push({ inputFile, outputFile, outputFormat });
-//       console.error("failed", error);
-//     }
-
-//     const formatInfo = formatConfig[outputFormat];
-
-//     if (!formatInfo) {
-//       console.error("Unsupported output format:", outputFormat);
-//       return;
-//     }
-
-//     const { codec, additionalOptions = [] } = formatInfo;
-//   };
-
-//   async function getFilename(filePath) {
-//     const match = filePath.match(/[^\\]+$/);
-//     return match ? match[0] : "unknown";
-//   }
-//   return { failedFiles, Finished: failedFiles.length === 0 };
-// }
-
 //Creaters workers to conver files
+//import { Worker  as WorkerT }  from "worker_threads"
+import { performance as perform } from "perf_hooks";;
+import { cpus } from 'os';
+import { isFileBusy, addToLog } from"./utils";
 
-// const { Worker } = require("worker_threads");
-// const { performance } = require("perf_hooks");
-// const { cpus } = require("os");
-// const chalk = require("chalk");
-// const { isFileBusy, addToLog, settings } = require("./utils");
-
-const convertFiles = async (files) => {
-  const jobStartTime = performance.now();
-  // await isFileBusy(`${settings.filePath}/logs.csv`);
-  // await isFileBusy(`${settings.filePath}/error.csv`);
+const convertFiles = async ({files, settings}) => {
+  const jobStartTime = perform.now();
+  await isFileBusy(`${settings.filePath}/logs.csv`);
+  await isFileBusy(`${settings.filePath}/error.csv`);
   try {
-    var cpuNumber = cpus().length;
+    var cpuNumber:number = cpus().length;
   } catch {
-    var cpuNumber = 8;
+    var cpuNumber:number = 8;
     console.warn(
       "🚨🚨⛔ Could not detect amount of CPU cores!!! Setting to 8 ⛔🚨🚨"
     );
   }
-
+let Worker;
+if (process && process.release && process.release.name === 'node') {
+  // Running in Node.js environment
+  Worker = require('worker_threads').Worker;
+} else {
+  // Running in browser environment
+  // Use alternative or polyfill for web workers
+  // For example:
+  Worker = window.Worker;
+}
   const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
-  const failedFiles = [];
-  const successfulFiles = [];
+  const failedFiles:string[] = [];
+  const successfulFiles:string[] = [];
   console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
   console.log("   Using", cpuNumber, "concurrent 🧵 threads");
 
-  const processFile = async (file, workerCounter, task, tasksLeft) => {
-    const workerStartTime = performance.now();
+  const processFile = async (file:any, workerCounter:number, task:number, tasksLeft:number) => {
+    const workerStartTime = perform.now();
     console.log(
-      chalk.cyanBright(
+      // chalk.cyanBright(
         `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
-      )
+      // )
     );
 
-    return new Promise((resolve, reject) => {
-      // console.log("m--dir", __dirname);
-      const worker = new Worker(`${__dirname}/converterWorker.js`, {
+    return new Promise((resolve, reject):void => {
+      console.log("m--dir", __dirname);
+      const worker = new WorkerT(`${__dirname}/converterWorker.js`, {
         workerData: file,
       });
 
-      worker.on("message", (message) => {
+      worker.on("message", (message:any) => {
         if (message.type === "stderr") {
           console.error("ERROR MESSAGE FROM FFMPEG", message.data);
           //console.warn(`filepath`, __dirname, __filename);
@@ -93,13 +54,13 @@ const convertFiles = async (files) => {
           return;
         }
         if (message.type === "code") {
-          const workerEndTime = performance.now();
+          const workerEndTime = perform.now();
           const workerCompTime = workerEndTime - workerStartTime;
           addToLog(message, file);
           if (message.data === 0) {
             successfulFiles.push(file);
             console.log(
-              chalk.greenBright(
+              // chalk.greenBright(
                 `\n🛠️👷‍♂️ Worker`,
                 workerCounter,
                 `finished task`,
@@ -108,7 +69,7 @@ const convertFiles = async (files) => {
                 `\n   Input"${file.inputFile}\n   Output"${
                   file.outputFile
                 }✅\n   in ${workerCompTime.toFixed(0)} milliseconds🕖`
-              )
+              // )
             );
             resolve();
           } else if (message.data !== 0) {
@@ -128,12 +89,12 @@ const convertFiles = async (files) => {
           }
         }
       });
-      worker.on("error", (code) => {
+      worker.on("error", (code:number) => {
         console.error(`🚨🚨⛔ Worker had an error with code:`, code, "⛔🚨🚨");
         reject(code);
       });
 
-      worker.on("exit", (code) => {});
+      worker.on("exit", (code:number) => {});
     });
   };
 
@@ -163,4 +124,4 @@ const convertFiles = async (files) => {
   await Promise.all(workerPromises);
   return { failedFiles, successfulFiles, jobStartTime };
 };
-export default convertFiles;
+module.exports = convertFiles;

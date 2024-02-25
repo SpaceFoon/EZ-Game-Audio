@@ -14,11 +14,10 @@
       "all": true,
       "os": {
         "all": true
-
       },
        "fs": {
-        "all": true,
         "scope": ["**"],
+        "all": true,
         "readFile": true,
         "writeFile": true,
         "readDir": true,
@@ -39,7 +38,7 @@
       },
       "shell": {
         "all": true,
-        "scope": [{"name": "src/bin/ffmpeg", "sidecar": true}],
+        "scope": [{"name": "/src/assets/ffmpeg.exe", "sidecar": true}],
         "execute": true,
         "sidecar": true,
         "open": true
