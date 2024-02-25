@@ -17,7 +17,7 @@ import searchFiles from "../Components/Backend/searchFiles";
  */
 const HomePage = (): JSX.Element =>{
   //Set buttons to most common audio formats.
-  const [filePath, setFilePath] = useState('');
+  const [currentFilePath, setFilePath] = useState('');
   const [inputType, setInputType] = useState(['mp3', 'wav', 'flac']);
   const [outputType, setOutputType] = useState(['ogg']);
   const [isInputTypeEmpty, setIsInputTypeEmpty] = useState(false);
@@ -52,7 +52,7 @@ return (
   <>
     <div className="container">
     <div className="container">
-      <FilePathComponent filePath={filePath} setFilePath = {setFilePath}/>
+      <FilePathComponent currentFilePath={currentFilePath} setFilePath = {setFilePath}/>
     </div>
  <div className="container">
     <CheckBoxes
@@ -65,7 +65,7 @@ return (
     <div className="container">
     <StartButton
     searchFiles={searchFiles}
-      filePath={filePath}
+      filePath={currentFilePath}
       inputType={inputType}
       outputType={outputType}
       isInputTypeEmpty={isInputTypeEmpty}

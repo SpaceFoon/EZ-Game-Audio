@@ -5,11 +5,19 @@
  * @param {(value: string) => void} setInputType - a function to update the inputType state
  * @param {(value: string) => void} setOutputType - a function to update the outputType state
  */
+
 import { useState } from 'react';
 import InputFormatCheckboxComponent from "./InputFormatComponent"
 import OutputFormatComponent from "./OutputFormatComponent"
 
-const CheckBoxes = ({inputType, outputType, setInputType, setOutputType}) => {
+interface CheckBoxesProps {
+  inputType: string[];
+  outputType: string[];
+  setInputType: React.Dispatch<React.SetStateAction<string[]>>;
+  setOutputType: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+const CheckBoxes: React.FC<CheckBoxesProps> = ({ inputType, outputType, setInputType, setOutputType }) => {
 const [allInputsChecked, setAllInputsChecked] = useState(false);
 const [allOutputChecked, setAllOutputChecked] = useState(false);
 
@@ -25,9 +33,9 @@ const handleAllInputsChange = () => {
 /**
    * @param {string[]} value - a file type to add or remove from the inputType state
    */
-  const handleInputChange = (value:[]) => {
+  const handleInputChange = (value: string) => {
     console.log('file type change:', value);
-    setInputType((current:[]) =>
+    setInputType((current: string[]) =>
       current.includes(value) ? current.filter((x) => x !== value) : [...current, value]
     );
   };
@@ -42,9 +50,9 @@ const handleAllOutputChange = () => {
  /**
    * @param {string[]} value - a file type to add or remove from the outputType state
    */
-  const handleOutputChange = (value) => {
+  const handleOutputChange = (value: string) => {
     console.log('output type change:', value);
-    setOutputType((current) =>
+    setOutputType((current:string[]) =>
       current.includes(value) ? current.filter((x) => x !== value) : [...current, value]
     );
   };
@@ -54,13 +62,9 @@ const isInputTypeEmpty = inputType.length;
 // if no output type is selected, flash output box red
 const isOutputTypeEmpty = outputType.length;
 
-if (isInputTypeEmpty <= 0) {
-  console.log('No input type selected');
-  
-}
-if (isOutputTypeEmpty <= 0) {
-  console.log('No output type selected');
-}
+if (isInputTypeEmpty <= 0)console.log('No input type selected');
+if (isOutputTypeEmpty <= 0)console.log('No output type selected');
+
 
 
 return (  
