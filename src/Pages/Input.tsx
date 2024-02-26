@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { ScrollArea } from '@mantine/core';
 //import { useWindowScroll, useViewportSize } from '@mantine/hooks';
 import { useLocation  } from 'react-router-dom';
-import Settings from '../Components/UI/2Input/Settings';
+import Settings from '../Components/UI/2Input/SettingsComponent';
 import FilesToConvert from '../Components/UI/2Input/FilesToConvert';
 import RemovedFiles from '../Components/UI/2Input/RemovedFiles';
 import NextButton from '../Components/UI/2Input/NextButton';
@@ -27,16 +27,20 @@ const InputPage = () => {
   //   console.log('canceled')
   //   setDialogOpen(false);
   // }
-  if (state) {
-    var { filePath, inputType, outputType, deduped, removed } = state;
-    inputType = inputType.join(', ');
-    outputType = outputType.join(', ');
-    var settings = { filePath, inputType, outputType };
+  // if (state) {
+  // Check if state is defined and contains the expected properties
+  if (!state || !state.filePath || !state.inputType || !state.outputType) {
+    return <div>Error: Invalid state object</div>;
+  }
+
+  // Extracting values from state and formatting them
+  const { filePath, inputType, outputType, deduped, removed } = state;
+  const settings = {filePath, inputType, outputType}
     //console.log("settings",settings);
     //console.log("deduped, removed", deduped, removed);
-  } else {
-    console.log('State is undefined or null');
-  }
+  // } else {
+    // console.log('State is undefined or null');
+  // }
  
   //console.log("settings1", {settings})
   // let progress = null
@@ -65,7 +69,7 @@ const InputPage = () => {
       {/* <div>
         <h2>Step 2</h2>
       </div> */}
-      <Settings settings={settings} />
+      <Settings filePath={filePath} inputType={inputType} outputType={outputType} />
       
       {/* <ScrollArea h={250} offsetScrollbars scrollbarSize={20} scrollHideDelay={500}> */}
         <RemovedFiles removed={removed} />

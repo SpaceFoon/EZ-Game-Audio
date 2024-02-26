@@ -1,21 +1,26 @@
 //Creaters workers to conver files
 //import { Worker  as WorkerT }  from "worker_threads"
-import { performance as perform } from "perf_hooks";;
+//import { performance as perform } from "perf_hooks";;
 import { cpus } from 'os';
 import { isFileBusy, addToLog } from"./utils";
-
-const convertFiles = async ({files, settings}) => {
-  const jobStartTime = perform.now();
-  await isFileBusy(`${settings.filePath}/logs.csv`);
-  await isFileBusy(`${settings.filePath}/error.csv`);
-  try {
-    var cpuNumber:number = cpus().length;
-  } catch {
-    var cpuNumber:number = 8;
-    console.warn(
-      "🚨🚨⛔ Could not detect amount of CPU cores!!! Setting to 8 ⛔🚨🚨"
-    );
-  }
+import {invoke} from '@tauri-apps/api/tauri'
+import { process } from '@tauri-apps/api';
+interface files {
+   file: string[]
+}
+const convertFiles = async (files:files) => {
+  // const jobStartTime = perform.now();
+  // await isFileBusy(`${settings.filePath}/logs.csv`);
+  // await isFileBusy(`${settings.filePath}/error.csv`);
+  // try {
+  //  var cpuNumber:number = cpus().length;
+  // } catch {
+  //   var cpuNumber:number = 8;
+  //   console.warn(
+  //     "🚨🚨⛔ Could not detect amount of CPU cores!!! Setting to 8 ⛔🚨🚨"
+  //   );
+  // }
+  // need to use rust to get cpu number
 let Worker;
 if (process && process.release && process.release.name === 'node') {
   // Running in Node.js environment
@@ -26,14 +31,14 @@ if (process && process.release && process.release.name === 'node') {
   // For example:
   Worker = window.Worker;
 }
-  const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
+  // const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
   const failedFiles:string[] = [];
   const successfulFiles:string[] = [];
-  console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
-  console.log("   Using", cpuNumber, "concurrent 🧵 threads");
+  // console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
+  // console.log("   Using", cpuNumber, "concurrent 🧵 threads");
 
   const processFile = async (file:any, workerCounter:number, task:number, tasksLeft:number) => {
-    const workerStartTime = perform.now();
+    // const workerStartTime = perform.now();
     console.log(
       // chalk.cyanBright(
         `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
@@ -42,7 +47,7 @@ if (process && process.release && process.release.name === 'node') {
 
     return new Promise((resolve, reject):void => {
       console.log("m--dir", __dirname);
-      const worker = new WorkerT(`${__dirname}/converterWorker.js`, {
+      const worker = new Worker(`${__dirname}/converterWorker.js`, {
         workerData: file,
       });
 
@@ -54,23 +59,25 @@ if (process && process.release && process.release.name === 'node') {
           return;
         }
         if (message.type === "code") {
-          const workerEndTime = perform.now();
-          const workerCompTime = workerEndTime - workerStartTime;
+          //const workerEndTime = perform.now();
+          //const workerCompTime = workerEndTime - workerStartTime;
           addToLog(message, file);
           if (message.data === 0) {
             successfulFiles.push(file);
-            console.log(
-              // chalk.greenBright(
-                `\n🛠️👷‍♂️ Worker`,
-                workerCounter,
-                `finished task`,
-                task,
+            // console.log(
+            //   // chalk.greenBright(
+            //     `\n🛠️👷‍♂️ Worker`,
+            //     workerCounter,
+            //     `finished task`,
+            //     task,
 
-                `\n   Input"${file.inputFile}\n   Output"${
-                  file.outputFile
-                }✅\n   in ${workerCompTime.toFixed(0)} milliseconds🕖`
-              // )
-            );
+            //     `\n   Input"${file.inputFile}\n   Output"${
+            //       file.outputFile
+            //     }
+            //     ✅\n   in 
+            //     ${workerCompTime.toFixed(0)} milliseconds🕖`
+            //   // )
+            // );
             resolve();
           } else if (message.data !== 0) {
             if (!failedFiles[file]) {
@@ -102,7 +109,10 @@ if (process && process.release && process.release.name === 'node') {
   const workerPromises = [];
   let workerCounter = 0;
   let task = 0;
-  for (let i = 0; i < maxConcurrentWorkers; i++) {
+  for (let i = 0; i < 
+    // maxConcurrentWorkers
+    8
+    ; i++) {
     workerPromises.push(
       (async () => {
         while (files.length > 0) {
@@ -122,6 +132,8 @@ if (process && process.release && process.release.name === 'node') {
   }
 
   await Promise.all(workerPromises);
-  return { failedFiles, successfulFiles, jobStartTime };
+  return { failedFiles, successfulFiles,
+    //  jobStartTime
+     };
 };
-module.exports = convertFiles;
+export default convertFiles;

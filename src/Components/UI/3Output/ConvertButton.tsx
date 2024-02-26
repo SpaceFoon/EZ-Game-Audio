@@ -1,27 +1,24 @@
 // ConvertButton.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import convertAudio from '../../Backend/converterWorker.ts';
+import convertFiles from '../../Backend/converterFiles.ts';
 import Loading from '../Loading';
 import DuplicateWarning from './DuplicateWarning';
 
-interface Settings {
-    [key: string]: any; // Define the type for settings as needed
-}
-
 interface ConversionFile {
+
     inputFile: string;
     outputFile: string;
     duplicate?: boolean;
 }
 
 interface Props {
-    settings: Settings;
     conversionList: ConversionFile[];
 }
 
-const ConvertButton: React.FC<Props> = ({ settings, conversionList }) => {
+const ConvertButton: React.FC<Props> = ({ conversionList }) => {
+    console.warn("conversionList", conversionList);
     const navigate = useNavigate();
     const [loading, setLoading] = useState<boolean>(false);
     const [conflicts, setConflicts] = useState<number>(0);
@@ -35,11 +32,11 @@ const ConvertButton: React.FC<Props> = ({ settings, conversionList }) => {
         } else {
             setLoading(true);
             try {
-                await convertAudio(settings, conversionList);
+                await convertFiles(conversionList);
                 setLoading(false);
                 setFailedFiles(failedFiles);
-                setFinished(Finished);
-                navigate("/Finished", { state: { failedFiles, Finished } });
+                setFinished(finished);
+                navigate("/Finished", { state: { failedFiles, finished } });
             } catch (error) {
                 console.error("Error converting audio:", error);
                 setLoading(false);
@@ -61,7 +58,7 @@ const ConvertButton: React.FC<Props> = ({ settings, conversionList }) => {
 };
 
 ConvertButton.propTypes = {
-    settings: PropTypes.object.isRequired,
+    // settings: PropTypes.object.isRequired,
     conversionList: PropTypes.array.isRequired,
 };
 

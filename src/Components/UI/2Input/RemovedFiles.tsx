@@ -2,13 +2,17 @@
 // List of files that were removed from the deduped list
 import PropTypes from 'prop-types';
 
-const RemovedFiles = ({ removed }) => {
+interface Props {
+    removed: string[]; // Define the type of the removed prop as an array of strings
+}
+
+const RemovedFiles: React.FC<Props> = ({ removed }) => {
     const amountOfFiles = removed.length;
     if (removed){
     return (
         <div className='titles'>
             <fieldset>
-                <legend>Duplicate Files not converting: {amountOfFiles} files</legend>
+                <legend>Duplicate Files Detected Not Converting: {amountOfFiles} files</legend>
             <ul>
                 {removed.map((file, index) => (
                     <li key={index}>{file}</li>
@@ -17,13 +21,11 @@ const RemovedFiles = ({ removed }) => {
             </fieldset>
         </div>
     );
-                }else{
-                    return
-                }
+    }else return;
 };
 
 RemovedFiles.propTypes = {
-    removed: PropTypes.array.isRequired,
+    removed: PropTypes.array.isRequired
 };
 
 export default RemovedFiles;

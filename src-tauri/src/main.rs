@@ -8,11 +8,23 @@ fn greet(name: &str) -> String {
 }
 //mod convert_files;
 //use convert_files;
+use num_cpus;
+
+#[tauri::command]
+fn get_num_cpus() -> usize {
+    num_cpus::get()
+}
 
 fn main() {
-    tauri::Builder::default()
-        // This is where you pass in your commands
-        .invoke_handler(tauri::generate_handler![greet])
-        .run(tauri::generate_context!())
-        .expect("failed to run app");
+    tauri::Builder::new()
+        .invoke_handler(tauri::generate_handler![get_num_cpus])
+        .run();
 }
+
+// fn main() {
+//     tauri::Builder::default()
+//         // This is where you pass in your commands
+//         .invoke_handler(tauri::generate_handler![greet])
+//         .run(tauri::generate_context!())
+//         .expect("failed to run app");
+// }

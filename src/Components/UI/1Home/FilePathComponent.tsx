@@ -22,7 +22,7 @@ const FilePathComponent: React.FC<Props> = ({ currentFilePath, setFilePath}) => 
       <legend>Source File Path:</legend>
       <input type="text" value={currentFilePath} placeholder="Select Source File Path" readOnly />
       <br />
-      <button type="button" onClick={() => handleSelect}>
+      <button type="button" onClick={handleSelect}>
         Select Folder
       </button>
     </fieldset>
