@@ -3,15 +3,17 @@
 import { Command } from "@tauri-apps/api/shell";
 // import { invoke } from "@tauri-apps/api/tauri";
 import { join } from "@tauri-apps/api/path";
-// import { workerData, parentPort } from "web";
+import { dirname as __durname } from "@tauri-apps/api/path";
 
-const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
-  const myWorker = new Worker("worker.js");
+const converterWorker = async (file:any) => {
+  // onmessage = function(file) {
 
   // console.log("process.env.ComSpec ", process.env.ComSpec);
   // console.log("DIRNAME worker", process.cwd(), __dirname, __filename);
   // console.log("inputFile", inputFile);
   const ffmpegPath = join(process.cwd(), `\\ffmpeg.exe`);
+  // const ffmpegPath = `\\ffmpeg.exe`;
+  const { inputFile, outputFile, outputFormat } = file;
   //console.log("path worker", ffmpegPath);
   return new Promise((resolve, reject) => {
     const formatConfig = {
@@ -25,7 +27,7 @@ const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
     };
 
     const { codec, additionalOptions = [] } = formatConfig[outputFormat];
-    const ffmpegCommand = new myWorker(
+    const ffmpegCommand = new Command(
       `"${ffmpegPath}"`,
       [
         "-loglevel",
@@ -40,30 +42,41 @@ const converterWorker = async ({ inputFile, outputFile, outputFormat }) => {
         // "1",
         "-y", //Disable prompts
         `"${outputFile}"`,
-      ],
+      ]
       // {
       //   shell: true,
       // }
     );
+
+    ffmpegCommand.stdout.on("data", (data) => {
+      console.log("stdout", data);
+      // Do something with stdout if needed
+    });
+
     ffmpegCommand.stderr.on("data", (data) => {
-      parentPort.postMessage({ type: "stderr", data: data.toString() });
+      console.log("data", data);
+      postMessage({ type: "stderr", data: data.toString() });
     });
-    ffmpegCommand.on("exit", (code) => {
-      parentPort.postMessage({ type: "code", data: code });
-      resolve();
+
+    ffmpegCommand.on("close", (code) => {
+      console.log("close", code);
+      postMessage({ type: "code", data: code });
+      resolve(code);
     });
+
     ffmpegCommand.on("error", (error) => {
       console.error("ERROR IN WORKER FFMPEGCOMMAND", error);
       reject(error);
     });
   });
 };
-const runConversion = async () => {
+
+self.onmessage = async (event) => {
   try {
-    await converterWorker(workerData);
+    await converterWorker(event.data);
   } catch (error) {
-    //parentPort.postMessage("error", error);
+    console.error("ERROR IN WORKER", error);
   }
 };
-runConversion();
-export default runConversion
+
+export default converterWorker;

@@ -1,7 +1,7 @@
 // vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-
+import converterWorker from "./src/Components/Backend/converterWorker"
 export default defineConfig(async () => ({
   plugins: [react()],
 

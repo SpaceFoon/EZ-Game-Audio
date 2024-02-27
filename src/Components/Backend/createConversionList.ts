@@ -11,8 +11,8 @@ import { join, dirname, basename, extname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
 interface Settings {
   filePath: string;
-  inputType: string;
-  outputType: string;
+  inputType: string[];
+  outputType: string[];
 }
 
 export default async function createConversionList(settings:Settings, files:string[]) {

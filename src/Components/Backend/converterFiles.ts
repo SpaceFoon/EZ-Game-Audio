@@ -1,69 +1,42 @@
 //Creaters workers to conver files
 //import { Worker  as WorkerT }  from "worker_threads"
 //import { performance as perform } from "perf_hooks";;
-import { cpus } from 'os';
-import { isFileBusy, addToLog } from"./utils";
-import {invoke} from '@tauri-apps/api/tauri'
-import { process } from '@tauri-apps/api';
-interface files {
-   file: string[]
+import { addToLog } from"./utils";
+// import {invoke} from '@tauri-apps/api/tauri'
+// import { process, shell} from '@tauri-apps/api';
+// import { dirname as __durname } from '@tauri-apps/api/path';
+interface File {
+  outputFile: string;
 }
-const convertFiles = async (files:files) => {
+const convertFiles = async (files:File[]) => {
   // const jobStartTime = perform.now();
   // await isFileBusy(`${settings.filePath}/logs.csv`);
   // await isFileBusy(`${settings.filePath}/error.csv`);
-  // try {
-  //  var cpuNumber:number = cpus().length;
-  // } catch {
-  //   var cpuNumber:number = 8;
-  //   console.warn(
-  //     "🚨🚨⛔ Could not detect amount of CPU cores!!! Setting to 8 ⛔🚨🚨"
-  //   );
-  // }
-  // need to use rust to get cpu number
-let Worker;
-if (process && process.release && process.release.name === 'node') {
-  // Running in Node.js environment
-  Worker = require('worker_threads').Worker;
-} else {
-  // Running in browser environment
-  // Use alternative or polyfill for web workers
-  // For example:
-  Worker = window.Worker;
-}
-  // const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
+  let cpuNumber:number = window.navigator.hardwareConcurrency;
+  // let Worker = window.Worker;
+  const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
   const failedFiles:string[] = [];
   const successfulFiles:string[] = [];
-  // console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
-  // console.log("   Using", cpuNumber, "concurrent 🧵 threads");
+  console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
+  console.log("   Using", cpuNumber, "concurrent 🧵 threads");
 
-  const processFile = async (file:any, workerCounter:number, task:number, tasksLeft:number) => {
-    // const workerStartTime = perform.now();
+  const processFile = async (file: File, workerCounter: number, task: number, tasksLeft: number) => {
     console.log(
-      // chalk.cyanBright(
-        `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
-      // )
+      `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
     );
-
-    return new Promise((resolve, reject):void => {
-      console.log("m--dir", __dirname);
-      const worker = new Worker(`${__dirname}/converterWorker.js`, {
-        workerData: file,
-      });
-
-      worker.on("message", (message:any) => {
-        if (message.type === "stderr") {
-          console.error("ERROR MESSAGE FROM FFMPEG", message.data);
-          //console.warn(`filepath`, __dirname, __filename);
-          addToLog(message, file);
-          return;
-        }
-        if (message.type === "code") {
-          //const workerEndTime = perform.now();
+    //const workerStartTime = perform.now();
+    return new Promise<void>((resolve, reject) => {
+      const worker = new Worker("./src/Components/Backend/converterWorker.ts");
+      worker.postMessage(file);
+      worker.onmessage = ({ data }) => {
+        if (data.type === "stderr") {
+          console.error("ERROR MESSAGE FROM FFMPEG", data.data);
+          addToLog(data, file);
+        } else if (data.type === "code") {
+             //const workerEndTime = perform.now();
           //const workerCompTime = workerEndTime - workerStartTime;
-          addToLog(message, file);
-          if (message.data === 0) {
-            successfulFiles.push(file);
+          addToLog(data, file);
+          if (data.data === 0) {
             // console.log(
             //   // chalk.greenBright(
             //     `\n🛠️👷‍♂️ Worker`,
@@ -78,41 +51,35 @@ if (process && process.release && process.release.name === 'node') {
             //     ${workerCompTime.toFixed(0)} milliseconds🕖`
             //   // )
             // );
+            successfulFiles.push(file.outputFile);
             resolve();
-          } else if (message.data !== 0) {
-            if (!failedFiles[file]) {
-              failedFiles.push(file);
+          } else {
+            if (!failedFiles.includes(file.outputFile)) {
+              failedFiles.push(file.outputFile);
             }
             console.error(
-              // chalk.bgRed(
               "\n🚨🚨⛔ Worker",
               workerCounter,
               "did not finish file ⛔🚨🚨: ",
               file.outputFile,
               "🔇"
-              // )
             );
             resolve();
           }
         }
-      });
-      worker.on("error", (code:number) => {
-        console.error(`🚨🚨⛔ Worker had an error with code:`, code, "⛔🚨🚨");
-        reject(code);
-      });
+      };
 
-      worker.on("exit", (code:number) => {});
+      worker.onerror = (error) => {
+        console.error(`🚨🚨⛔ Worker had an error:`, error, "⛔🚨🚨");
+        reject(error);
+      };
     });
   };
 
-  // Worker Manger
   const workerPromises = [];
   let workerCounter = 0;
   let task = 0;
-  for (let i = 0; i < 
-    // maxConcurrentWorkers
-    8
-    ; i++) {
+  for (let i = 0; i < maxConcurrentWorkers; i++) {
     workerPromises.push(
       (async () => {
         while (files.length > 0) {
@@ -121,8 +88,10 @@ if (process && process.release && process.release.name === 'node') {
             let tasksLeft = files.length;
             task++;
             workerCounter++;
-            if (workerCounter > 8) workerCounter = workerCounter - 8;
+            if (workerCounter > maxConcurrentWorkers) workerCounter = workerCounter - maxConcurrentWorkers;
+            if (file){
             await processFile(file, workerCounter, task, tasksLeft);
+            }
           } catch (error) {
             console.error("ERROR", error);
           }
@@ -132,8 +101,7 @@ if (process && process.release && process.release.name === 'node') {
   }
 
   await Promise.all(workerPromises);
-  return { failedFiles, successfulFiles,
-    //  jobStartTime
-     };
+  return { failedFiles, successfulFiles };
 };
+
 export default convertFiles;

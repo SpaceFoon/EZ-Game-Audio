@@ -6,10 +6,9 @@ import Loading from '../Loading';
 
 interface Settings {
   filePath: string;
-  inputType: string | string[];
-  outputType: string | string[];
+  inputType: string[];
+  outputType: string[];
 }
-
 interface NextButtonProps {
   settings: Settings;
   deduped: string[];
