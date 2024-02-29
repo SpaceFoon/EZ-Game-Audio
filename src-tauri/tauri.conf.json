@@ -15,6 +15,9 @@
       "os": {
         "all": true
       },
+        "path": {
+        "all": true
+        },
        "fs": {
         "scope": ["**"],
         "all": true,
@@ -37,12 +40,10 @@
         "save": true 
       },
       "shell": {
-        "all": true,
-        "scope": [{"name": "/src/assets/ffmpeg.exe", "sidecar": true}],
+        "scope": [{"name": "src/assets/ffmpeg.exe", "sidecar": true}],
         "execute": true,
-        "sidecar": true,
         "open": true
-      }
+      } 
     },
     "windows": [
       {

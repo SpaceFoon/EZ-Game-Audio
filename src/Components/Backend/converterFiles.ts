@@ -5,15 +5,15 @@ import { addToLog } from"./utils";
 // import {invoke} from '@tauri-apps/api/tauri'
 // import { process, shell} from '@tauri-apps/api';
 // import { dirname as __durname } from '@tauri-apps/api/path';
+import { resolveResource } from '@tauri-apps/api/path';
+
 interface File {
+  inputFile: string;
   outputFile: string;
 }
 const convertFiles = async (files:File[]) => {
   // const jobStartTime = perform.now();
-  // await isFileBusy(`${settings.filePath}/logs.csv`);
-  // await isFileBusy(`${settings.filePath}/error.csv`);
   let cpuNumber:number = window.navigator.hardwareConcurrency;
-  // let Worker = window.Worker;
   const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
   const failedFiles:string[] = [];
   const successfulFiles:string[] = [];
@@ -25,9 +25,12 @@ const convertFiles = async (files:File[]) => {
       `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
     );
     //const workerStartTime = perform.now();
+    const resourcePath = await resolveResource('src/assets/ffmpeg.exe');
+console.log("resource--------",resourcePath);
     return new Promise<void>((resolve, reject) => {
-      const worker = new Worker("./src/Components/Backend/converterWorker.ts");
-      worker.postMessage(file);
+    
+      const worker = new Worker("./src/Components/Backend/converterWorker.ts", {type: "module"});
+      worker.postMessage([file, resourcePath]);
       worker.onmessage = ({ data }) => {
         if (data.type === "stderr") {
           console.error("ERROR MESSAGE FROM FFMPEG", data.data);
@@ -37,6 +40,11 @@ const convertFiles = async (files:File[]) => {
           //const workerCompTime = workerEndTime - workerStartTime;
           addToLog(data, file);
           if (data.data === 0) {
+            console.log(
+                          
+             `\n🛠️👷‍♂️ Worker`,
+                workerCounter,
+                `finished task`, file.outputFile)
             // console.log(
             //   // chalk.greenBright(
             //     `\n🛠️👷‍♂️ Worker`,
