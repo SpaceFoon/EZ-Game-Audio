@@ -1,15 +1,14 @@
-//Creaters workers to conver files
-//import { Worker  as WorkerT }  from "worker_threads"
-//import { performance as perform } from "perf_hooks";;
+
 import { addToLog } from"./utils";
-// import {invoke} from '@tauri-apps/api/tauri'
-// import { process, shell} from '@tauri-apps/api';
-// import { dirname as __durname } from '@tauri-apps/api/path';
+
 import { resolveResource } from '@tauri-apps/api/path';
+import { invoke } from "@tauri-apps/api";
+import { exists, BaseDirectory } from '@tauri-apps/api/fs';
 
 interface File {
   inputFile: string;
   outputFile: string;
+  outputFormat: string;
 }
 const convertFiles = async (files:File[]) => {
   // const jobStartTime = perform.now();
@@ -25,64 +24,35 @@ const convertFiles = async (files:File[]) => {
       `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
     );
     //const workerStartTime = perform.now();
-    const resourcePath = await resolveResource('src/assets/ffmpeg.exe');
+    const resourcePath = await resolveResource('ffmpeg-x86_64-pc-windows-msvc.exe');
 console.log("resource--------",resourcePath);
-    return new Promise<void>((resolve, reject) => {
-    
-      const worker = new Worker("./src/Components/Backend/converterWorker.ts", {type: "module"});
-      worker.postMessage([file, resourcePath]);
-      worker.onmessage = ({ data }) => {
-        if (data.type === "stderr") {
-          console.error("ERROR MESSAGE FROM FFMPEG", data.data);
-          addToLog(data, file);
-        } else if (data.type === "code") {
-             //const workerEndTime = perform.now();
-          //const workerCompTime = workerEndTime - workerStartTime;
-          addToLog(data, file);
-          if (data.data === 0) {
-            console.log(
-                          
-             `\n🛠️👷‍♂️ Worker`,
-                workerCounter,
-                `finished task`, file.outputFile)
-            // console.log(
-            //   // chalk.greenBright(
-            //     `\n🛠️👷‍♂️ Worker`,
-            //     workerCounter,
-            //     `finished task`,
-            //     task,
+if (await exists(resourcePath)){
+  console.log("yes")
+}else {console.log("no", {dir:  BaseDirectory});};
 
-            //     `\n   Input"${file.inputFile}\n   Output"${
-            //       file.outputFile
-            //     }
-            //     ✅\n   in 
-            //     ${workerCompTime.toFixed(0)} milliseconds🕖`
-            //   // )
-            // );
-            successfulFiles.push(file.outputFile);
+
+return new Promise<void>((resolve, reject) => {
+    async function callRustFunction() {
+
+              try {
+          //console.log("file", file)
+            const result = await invoke("my_rust_function", {
+                inputFile: file.inputFile,
+                outputFile: file.outputFile,
+                outputFormat: file.outputFormat,
+                resourcePath: resourcePath
+
+            });
+            console.log("Result from Rust:", result);
             resolve();
-          } else {
-            if (!failedFiles.includes(file.outputFile)) {
-              failedFiles.push(file.outputFile);
-            }
-            console.error(
-              "\n🚨🚨⛔ Worker",
-              workerCounter,
-              "did not finish file ⛔🚨🚨: ",
-              file.outputFile,
-              "🔇"
-            );
-            resolve();
-          }
+        } catch (error) {
+            console.error("Error calling Rust function:", error);
+            reject(error);
         }
-      };
+    }
+callRustFunction();
 
-      worker.onerror = (error) => {
-        console.error(`🚨🚨⛔ Worker had an error:`, error, "⛔🚨🚨");
-        reject(error);
-      };
-    });
-  };
+    })}
 
   const workerPromises = [];
   let workerCounter = 0;

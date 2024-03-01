@@ -9,7 +9,9 @@
     "productName": "EZ-Game-Audio",
     "version": "0.0.0"
   },
+  
     "tauri": {
+      
     "allowlist": {
       "all": true,
       "os": {
@@ -40,7 +42,7 @@
         "save": true 
       },
       "shell": {
-        "scope": [{"name": "src/assets/ffmpeg.exe", "sidecar": true}],
+        "scope": [{"name": "../src/assets/ffmpeg-x86_64-pc-windows-msvc.exe", "sidecar": true}],
         "execute": true,
         "open": true
       } 
@@ -57,7 +59,12 @@
     "security": {
       "csp": null
     },
+    
     "bundle": {
+    
+      "resources":[
+        "../src/assets/ffmpeg-x86_64-pc-windows-msvc.exe"
+      ],
       "active": true,
       "targets": "nsis",
       "identifier": "com.tauriii.dev",
