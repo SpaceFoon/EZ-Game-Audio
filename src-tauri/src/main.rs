@@ -1,16 +1,15 @@
-#[allow(unused)]
+extern crate tauri;
 use std::collections::HashMap;
-use std::env;
-use std::path::Path;
 use std::process::Command;
+mod my_utils;
 
 #[tauri::command]
+
 async fn my_rust_function(
     input_file: String,
     output_file: String,
     output_format: String,
-    resource_path: String,
-) -> Result<String, String> {
+) -> Result<(String, String, i32, Vec<String>), String> {
     // Define the format configuration hashmap
     let format_config: HashMap<&str, (&str, &[&str])> = [
         ("ogg", ("libopus", &["-b:a", "192k"][..])),
@@ -22,11 +21,6 @@ async fn my_rust_function(
     .iter()
     .cloned()
     .collect();
-
-    // Check if ffmpeg executable exists
-    if !Path::new(&resource_path).exists() {
-        return Err(format!("ffmpeg executable not found at: {}", resource_path));
-    }
     // Retrieve codec and additional options from format configuration
     let (codec, additional_options) = match format_config.get(&output_format.as_str()) {
         Some(&(codec, options)) => (codec, options),
@@ -55,15 +49,27 @@ async fn my_rust_function(
     // Check if ffmpeg command succeeded
     match ffmpeg_command_output {
         Ok(output) => {
-            if output.status.success() {
-                // Ffmpeg command succeeded
-                println!("ffmpeg command successful!");
-                Ok(format!("Received file object: {:?}", output_format))
-            } else {
-                // Ffmpeg command failed
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                Err(format!("ffmpeg command failed: {}", stderr))
+            let mut stderr_outputs: Vec<String> = Vec::new();
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stderr_clone = stderr.clone(); // Clone stderr before moving it
+            let exit_code: i32 = output.status.code().unwrap_or_default();
+            if !stderr.trim().is_empty() {
+                // Add stderr output to the vector
+                stderr_outputs.push(stderr_clone.into_owned());
             }
+            // if exit_code != 0 {
+            //     // Ffmpeg command failed
+            //     format!(
+            //         "ffmpeg command failed with exit code {}: {}",
+            //         exit_code, stderr
+            //     );
+            // } else {
+            //     println!("ffmpeg command successful!");
+            // }
+            let _ =
+                my_utils::add_to_log(&input_file, &output_file, &exit_code, &stderr_outputs).await;
+            // Return result of the function
+            Ok((input_file, output_file, exit_code, stderr_outputs))
         }
         Err(err) => {
             // Error executing ffmpeg command

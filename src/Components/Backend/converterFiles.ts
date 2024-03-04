@@ -1,9 +1,9 @@
 
-import { addToLog } from"./utils";
+// import { addToLog } from"./utils";
 
-import { resolveResource } from '@tauri-apps/api/path';
+// import { resolveResource } from '@tauri-apps/api/path';
 import { invoke } from "@tauri-apps/api";
-import { exists, BaseDirectory } from '@tauri-apps/api/fs';
+// import { exists, BaseDirectory } from '@tauri-apps/api/fs';
 
 interface File {
   inputFile: string;
@@ -17,33 +17,39 @@ const convertFiles = async (files:File[]) => {
   const failedFiles:string[] = [];
   const successfulFiles:string[] = [];
   console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
-  console.log("   Using", cpuNumber, "concurrent 🧵 threads");
 
   const processFile = async (file: File, workerCounter: number, task: number, tasksLeft: number) => {
     console.log(
       `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
     );
     //const workerStartTime = perform.now();
-    const resourcePath = await resolveResource('ffmpeg-x86_64-pc-windows-msvc.exe');
-console.log("resource--------",resourcePath);
-if (await exists(resourcePath)){
-  console.log("yes")
-}else {console.log("no", {dir:  BaseDirectory});};
+//     const resourcePath = await resolveResource('ffmpeg-x86_64-pc-windows-msvc.exe');
+// console.log("resource--------",resourcePath);
+// if (await exists(resourcePath)){
+//   console.log("yes")
+// }else {console.log("no", {dir:  BaseDirectory});};
 
 
 return new Promise<void>((resolve, reject) => {
     async function callRustFunction() {
 
-              try {
-          //console.log("file", file)
-            const result = await invoke("my_rust_function", {
+          try {
+            //console.log("file", file)
+            const result:any = await invoke("my_rust_function", {
                 inputFile: file.inputFile,
                 outputFile: file.outputFile,
                 outputFormat: file.outputFormat,
-                resourcePath: resourcePath
-
             });
+            
             console.log("Result from Rust:", result);
+
+            if (result !== undefined && result !== null && result.exit_code !== 0) {
+              successfulFiles.push(result.output_file);
+              // addToLog(result.exitCode, result.inputFile, result.outputFile, result.stderr_outputs);
+            }else if (result === 0){
+              failedFiles.push(result.output_file);
+              // addToLog(result.exitCode, result.inputFile, result.outputFile)
+            }
             resolve();
         } catch (error) {
             console.error("Error calling Rust function:", error);
@@ -51,7 +57,6 @@ return new Promise<void>((resolve, reject) => {
         }
     }
 callRustFunction();
-
     })}
 
   const workerPromises = [];
