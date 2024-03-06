@@ -6,11 +6,11 @@ use tauri::api::path::app_data_dir;
 use tauri_utils::config::Config;
 // mod emit_all;
 
-fn is_file_busy(log_name: &Path) -> io::Result<bool> {
+async fn is_file_busy(log_name: &Path) -> io::Result<bool> {
     match File::open(log_name) {
         Ok(_) => {
             // File was successfully opened, so it is available
-            println!("File was successfully opened");
+            // println!("File was successfully opened");
             Ok(false)
         }
         Err(err) => {
@@ -33,10 +33,11 @@ pub async fn add_to_log(
     exit_code: &i32,
     stderr_outputs: &Vec<String>,
 ) -> io::Result<()> {
+    let input_file = str::replace(input_file, ",", "");
+    let output_file = str::replace(output_file, ",", "");
     let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S");
-
+    // println!("{}", timestamp);
     let config = Config::default();
-
     let log_dir = match app_data_dir(&config) {
         Some(mut path) => {
             path.push("ez-audio");
@@ -55,21 +56,19 @@ pub async fn add_to_log(
             ));
         }
     };
-    let mut csv_row = format!(
-        "{},{},{},{}\n",
-        timestamp, exit_code, input_file, output_file
-    );
-    let mut logs_file = &log_dir.join("logs.csv");
+
+    let csv_row = format!("{},{},{},{}", timestamp, exit_code, input_file, output_file);
+
+    let logs_file = &log_dir.join("logs.csv");
     let errors_file = &log_dir.join("error.csv");
     let lock_file = log_dir.join(".~lock.logs.csv#");
     let lock_e_file = log_dir.join(".~lock.error.csv#");
+
     if lock_file.exists() {
-        // emit_event(true);
         panic!("Lock file exists for logs.csv");
-        // Handle the case where the lock file exists
     }
+
     if lock_e_file.exists() {
-        // emit_event(true);
         panic!("Lock file exists for error.csv");
     }
 
@@ -80,25 +79,36 @@ pub async fn add_to_log(
     let _ = is_file_busy(logs_file);
 
     if file.metadata()?.len() == 0 {
-        if *exit_code == 0 {
-            writeln!(file, "Timestamp,Exit Code,Input,Output")?;
-        }
+        writeln!(file, "Timestamp,Exit Code,Input,Output")?;
     }
 
-    file.write_all(csv_row.as_bytes())?;
+    file.write_all(format!("{}\n", csv_row).as_bytes())?;
 
     if !stderr_outputs.is_empty() {
-        if file.metadata()?.len() == 0 {
-            writeln!(file, "Timestamp,Exit Code,Errors, Input,Output")?;
+        let mut stderr_outputs_str = stderr_outputs
+            .iter()
+            .map(|_s_| _s_.replace(",", " "))
+            .collect::<Vec<_>>()
+            .join(" ");
+        stderr_outputs_str = str::replace(&str::replace(&stderr_outputs_str, "\n", " "), "\r", " ");
+
+        let mut error_file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&errors_file)?;
+
+        let _ = is_file_busy(errors_file);
+
+        if error_file.metadata()?.len() == 0 {
+            writeln!(error_file, "Errors,Timestamp,Exit Code,Input,Output")?;
         }
-        let stderr_output_str = stderr_outputs.join(", ");
-        let csv_row = format!(
+
+        let error_csv_row = format!(
             "{},{},{},{},{}\n",
-            timestamp, exit_code, stderr_output_str, input_file, output_file
+            stderr_outputs_str, timestamp, exit_code, input_file, output_file
         );
-        logs_file = errors_file;
-        let _ = is_file_busy(logs_file);
-        file.write_all(csv_row.as_bytes())?;
+
+        error_file.write_all(format!("{}\n", error_csv_row).as_bytes())?;
     }
 
     Ok(())
