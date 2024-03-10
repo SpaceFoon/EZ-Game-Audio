@@ -65,8 +65,6 @@ const isOutputTypeEmpty = outputType.length;
 if (isInputTypeEmpty <= 0)console.log('No input type selected');
 if (isOutputTypeEmpty <= 0)console.log('No output type selected');
 
-
-
 return (  
     <>   
        <fieldset>

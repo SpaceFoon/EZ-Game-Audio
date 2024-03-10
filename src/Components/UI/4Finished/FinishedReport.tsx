@@ -1,6 +1,11 @@
 import PropTypes from 'prop-types';
 
-const FailedFiles = ({ failedFiles }) => (
+interface FinishedReportProps {
+    failedFiles?: string[];
+    successfulFiles?: string[];
+}
+
+const FailedFiles: React.FC<{ failedFiles: string[] }> = ({ failedFiles }) => (
     <div>
         <h2>Failed Files:</h2>
         <ul>
@@ -11,35 +16,33 @@ const FailedFiles = ({ failedFiles }) => (
     </div>
 );
 
-FailedFiles.propTypes = {
-    failedFiles: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
-
-const CompletedFiles = ({ completedFiles }) => (
+const SuccessfulFiles: React.FC<{ successfulFiles: string[] }> = ({ successfulFiles }) => (
     <div>
         <h2>Completed Files:</h2>
         <ul>
-            {completedFiles.map((file, index) => (
+            {successfulFiles.map((file, index) => (
                 <li key={index}>{file}</li>
             ))}
         </ul>
     </div>
 );
 
-CompletedFiles.propTypes = {
-    completedFiles: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
+const FinishedReport: React.FC<FinishedReportProps> = (failedFiles, successfulFiles) => {
+    // const failedFiles: string[] = ['file1.txt', 'file2.txt', 'file3.txt'];
+    // const completedFiles: string[] = ['file4.txt', 'file5.txt', 'file6.txt'];
 
-const FinishedReport = () => {
-    const failedFiles = ['file1.txt', 'file2.txt', 'file3.txt'];
-    const completedFiles = ['file4.txt', 'file5.txt', 'file6.txt'];
 
     return (
         <div>
             <FailedFiles failedFiles={failedFiles} />
-            <CompletedFiles completedFiles={completedFiles} />
+            <SuccessfulFiles successfulFiles={successfulFiles} />
         </div>
     );
 };
-
+// CompletedFiles.propTypes = {
+//     completedFiles: PropTypes.arrayOf(PropTypes.string),
+// };
+// FailedFiles.propTypes = {
+//     failedFiles: PropTypes.arrayOf(PropTypes.string),
+// };
 export default FinishedReport;

@@ -1,16 +1,22 @@
 
-// import { addToLog } from"./utils";
-
-// import { resolveResource } from '@tauri-apps/api/path';
+//converterFiles.ts
 import { invoke } from "@tauri-apps/api";
-// import { exists, BaseDirectory } from '@tauri-apps/api/fs';
 
 interface File {
   inputFile: string;
   outputFile: string;
   outputFormat: string;
 }
-const convertFiles = async (files:File[]) => {
+interface ProgressUpdate {
+  successfulFile: string;
+  failedFile: string;
+}
+interface ConvertFilesResult {
+  failedFiles: string[];
+  successfulFiles: string[];
+}
+
+const convertFiles = async (files: File[], onProgressUpdate: (update: ProgressUpdate) => void): Promise<ConvertFilesResult> => {
   // const jobStartTime = perform.now();
   let cpuNumber:number = window.navigator.hardwareConcurrency;
   const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
@@ -45,10 +51,11 @@ return new Promise<void>((resolve, reject) => {
 
             if (result !== undefined && result !== null && result.exit_code !== 0) {
               successfulFiles.push(result.output_file);
-              // addToLog(result.exitCode, result.inputFile, result.outputFile, result.stderr_outputs);
+              onProgressUpdate({ successfulFile: '', failedFile: result.output_file }); // Include successfulFile property
+
             }else if (result === 0){
               failedFiles.push(result.output_file);
-              // addToLog(result.exitCode, result.inputFile, result.outputFile)
+              onProgressUpdate({ successfulFile: result.output_file, failedFile: '' }); // Include failedFile property
             }
             resolve();
         } catch (error) {

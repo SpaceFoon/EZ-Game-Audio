@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import createConversionList from '../../Backend/createConversionList';
 import Loading from '../Loading';
 
+
 interface Settings {
   filePath: string;
   inputType: string[];
@@ -20,8 +21,10 @@ const NextButton: React.FC<NextButtonProps> = ({ settings, deduped }) => {
 
   const handleClick = async () => {
     setLoading(true);
-    const newConversionList = await createConversionList(settings, deduped);
-    navigate("/Output", { state: { conversionList: newConversionList } });
+    const conversionList = await createConversionList(settings, deduped);
+      console.log("newConversionList",conversionList)
+
+    navigate("/Output", { state:  conversionList });
     setLoading(false);
   };
 

@@ -22,13 +22,13 @@ const HomePage = (): JSX.Element =>{
   const [outputType, setOutputType] = useState(['ogg']);
   const [isInputTypeEmpty, setIsInputTypeEmpty] = useState(false);
   const [isOutputTypeEmpty, setIsOutputTypeEmpty] = useState(false);
-
- useEffect(() => {
-    setIsOutputTypeEmpty(!outputType || outputType.length === 0);
-  }, [outputType]);
   useEffect(() => {
     setIsInputTypeEmpty(!inputType || inputType.length === 0);
   }, [inputType]);
+ useEffect(() => {
+    setIsOutputTypeEmpty(!outputType || outputType.length === 0);
+  }, [outputType]);
+
 
   // Initialize default file path
   useEffect(() => {

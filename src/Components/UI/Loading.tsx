@@ -1,13 +1,36 @@
-import 'ldrs/waveform'
+import React from 'react';
+import 'ldrs/waveform';
 
-export default function Loading() {
-    return(
+
+interface WaveformProps {
+    size?: string | number;
+    stroke?: string | number;
+    speed?: string | number;
+    color?: string;
+}
+
+declare global {
+    namespace JSX {
+        interface IntrinsicElements {
+            'l-waveform': WaveformProps;
+        }
+    }
+}
+
+const Loading: React.FC<WaveformProps> = ({
+    size = "45",
+    stroke = "3.5",
+    speed = ".7",
+    color = "white"
+}) => {
+    return (
         <l-waveform
-           size="45"
-           stroke="3.5"
-           speed=".7"
-           color="white"
-           ></l-waveform>
-//     ) <div dangerouslySetInnerHTML={{ __html: '<l-waveform></l-waveform>' }} />;
-// 
-    )}
+            size={size}
+            stroke={stroke}
+            speed={speed}
+            color={color}
+        />
+    );
+};
+
+export default Loading;
