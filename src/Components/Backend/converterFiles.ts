@@ -1,7 +1,7 @@
 
 //converterFiles.ts
 import { invoke } from "@tauri-apps/api";
-
+import { emit } from '@tauri-apps/api/event';
 interface File {
   inputFile: string;
   outputFile: string;
@@ -16,18 +16,20 @@ interface ConvertFilesResult {
   successfulFiles: string[];
 }
 
-const convertFiles = async (files: File[], onProgressUpdate: (update: ProgressUpdate) => void): Promise<ConvertFilesResult> => {
+const convertFiles = async (conversionList: File[], onProgressUpdate: (update: ProgressUpdate) => void): Promise<ConvertFilesResult> => {
   // const jobStartTime = perform.now();
+  let files = conversionList;
   let cpuNumber:number = window.navigator.hardwareConcurrency;
   const maxConcurrentWorkers = Math.round(Math.min(cpuNumber, files.length));
   const failedFiles:string[] = [];
-  const successfulFiles:string[] = [];
+  const successfulFiles:string[] = []
   console.info("\n   Detected 🕵️‍♂️", cpuNumber, "CPU Cores 🖥");
 
   const processFile = async (file: File, workerCounter: number, task: number, tasksLeft: number) => {
     console.log(
       `\n🛠️👷‍♂️ Worker ${workerCounter} has started 📋 task ${task} with ${tasksLeft} tasks left on outputfile:\n   ${file.outputFile}📤`
     );
+    await emit('Started-File', { file: file, workerCounter: workerCounter, task: task });
     //const workerStartTime = perform.now();
 //     const resourcePath = await resolveResource('ffmpeg-x86_64-pc-windows-msvc.exe');
 // console.log("resource--------",resourcePath);
@@ -50,11 +52,11 @@ return new Promise<void>((resolve, reject) => {
             console.log("Result from Rust:", result);
 
             if (result !== undefined && result !== null && result.exit_code !== 0) {
-              successfulFiles.push(result.output_file);
+              successfulFiles.push(result[1]);
               onProgressUpdate({ successfulFile: '', failedFile: result.output_file }); // Include successfulFile property
 
             }else if (result === 0){
-              failedFiles.push(result.output_file);
+              failedFiles.push(result[1]);
               onProgressUpdate({ successfulFile: result.output_file, failedFile: '' }); // Include failedFile property
             }
             resolve();
@@ -91,6 +93,7 @@ callRustFunction();
   }
 
   await Promise.all(workerPromises);
+  console.log("FS", failedFiles, successfulFiles)
   return { failedFiles, successfulFiles };
 };
 

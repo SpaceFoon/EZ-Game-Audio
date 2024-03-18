@@ -12,59 +12,23 @@ import NextButton from '../Components/UI/2Input/NextButton';
 // import DuplicateDialog from '../Components/UI/2Input/DuplicateDialog';
 
 const InputPage = () => {
-  // const [isDialogOpen, setDialogOpen] = useState(false);
+
   
   const { state } = useLocation();
-  console.log("state", state);
-  // // Call this function when you want to open the dialog
-  // function openDialog() {
-  //   console.log('confirmed')
-  //   setDialogOpen(true);
-  // }
+  console.log("input state", state);
 
-  // // Call this function when you want to close the dialog
-  // function closeDialog() {
-  //   console.log('canceled')
-  //   setDialogOpen(false);
-  // }
-  // if (state) {
-  // Check if state is defined and contains the expected properties
   if (!state || !state.filePath || !state.inputType || !state.outputType) {
     return <div>Error: Invalid state object</div>;
   }
-
   // Extracting values from state and formatting them
   const { filePath, inputType, outputType, deduped, removed } = state;
   const settings = {filePath, inputType, outputType}
     //console.log("settings",settings);
     //console.log("deduped, removed", deduped, removed);
-  // } else {
-    // console.log('State is undefined or null');
-  // }
- 
-  //console.log("settings1", {settings})
-  // let progress = null
-  //console.log("filePath:", filePath);
-  //console.log("inputType:", inputType);
-  //console.log("outputType:", outputType);
 
-//console.log("Files", files); // log the files array
-
-
-  // const [scroll, scrollTo] = useWindowScroll();
-  // console.log("scroll", scroll);
-// function Demo2() {
-//   const { height, width } = useViewportSize();
-//   return <>Width: {width}, height: {height}</>;
-// }
-// Demo2()
   return (
     <>
-    {/* <DuplicateDialog
-        title="File already exists!"
-        description="Do you want to overwrite, rename or skip the file?"
-     /> */}
-      {/* <Box> */}
+
       <ScrollArea.Autosize type='auto' mah={'80vh'} maw={'100vw'} mx="auto" scrollbarSize={30} offsetScrollbars >
       {/* <div>
         <h2>Step 2</h2>

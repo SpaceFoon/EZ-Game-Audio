@@ -1,11 +1,5 @@
-// //Create list of output files from input files and settings. Flag duplicates for dialog.
-// import { join, dirname, basename, extname } from "@tauri-apps/api/path";
-// import { exists } from "@tauri-apps/api/fs";
-
-// const { existsSync } = require("fs");
-// const { join, basename, extname, dirname, normalize } = require("path");
-// const chalk = require("chalk");
-// const { getAnswer, settings } = require("./utils");
+//createConversionList.ts
+//Create list of output files from input files and settings. Flag duplicates for dialog.
 
 import { join, dirname, basename, extname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
@@ -19,7 +13,6 @@ export default async function createConversionList(settings:Settings, files:stri
   console.log("createConversionList", settings, files);
   const outputFormats = settings.outputType
   
-
   console.log("outputFormats", outputFormats);
   const conversionList = [];
 
@@ -47,12 +40,7 @@ export default async function createConversionList(settings:Settings, files:stri
     }
   }
   console.log("createConverstionList Pending conversion:", conversionList);
-  return conversionList; //.filter((x) => x.outputFile !== "skipped!");
-  // const outputFileCopy = `${await join(
-  //   await dirname(inputFile),
-  //   `${await basename(inputFile, await extname(inputFile))} copy (1)`
-  // )}${outputFormat}`;
-
+  return conversionList;
 
 
 

@@ -5,3 +5,26 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafb);
 }
+
+.flash {
+  background-color: #630101;
+  animation: flash 1s infinite alternate;
+}
+.flashing {
+  animation: flash 1s infinite alternate; /* Flashing animation */
+}
+
+@keyframes flash {
+  0% {
+    background-color: transparent;
+  }
+  15% {
+    background-color: #6c1f1f;
+  }
+  85% {
+    background-color: #6c1f1f;
+  }
+  100% {
+    background-color: transparent;
+  }
+}

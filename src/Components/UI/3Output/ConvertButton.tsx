@@ -1,29 +1,26 @@
 // ConvertButton.jsx
-import PropTypes from 'prop-types';
 import Loading from '../Loading';
 
+interface CBProps {
+    loading: boolean;
+    conflicts: number;
+    handleClick: () => void;
+}
 
-
-    
-const ConvertButton:any = ( {loading, conflicts, handleClick} ) => {
+const ConvertButton:React.FC<CBProps> = ( {loading, conflicts, handleClick} ) => {
     console.log("loading", loading);
-              console.log("conflicts", conflicts)
-
+              console.log("conflicts in ConvertButton", conflicts)
     return (
         <div>
             {loading ? (
                 <Loading />
             ) : (
-                <button disabled={conflicts > 0} onClick={handleClick}>
-                    {conflicts > 0 ? 'Handle Conflicts' : 'Convert'}
+                <button onClick={handleClick}>
+                    {conflicts ? 'Handle Conflicts' : 'Convert'}
                 </button>
             )}
         </div>
     );
 };
 
-// ConvertButton.propTypes = {
-//     // settings: PropTypes.object.isRequired,
-//     loading: PropTypes.bool.isRequired,
-// };
 export default ConvertButton;
