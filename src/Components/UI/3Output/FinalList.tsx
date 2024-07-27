@@ -7,35 +7,35 @@ import { listen } from '@tauri-apps/api/event';
 interface ConversionJob {
   inputFile: string;
   outputFile: string;
-  outputFormat: string; // Added missing property
+  outputFormat: string;
   duplicate: [];
 }
 
 interface FinalListProps {
   conversionList: ConversionJob[];
-  conflicts: any; // Adjust type if needed
-  progress: any; // Adjust type if needed
+  conflicts: any;
+  progress: any;
 }
 
 const FinalList: React.FC<FinalListProps> = ({ conversionList, conflicts, progress }) => {
     console.log("finallist",conversionList)
  const [updatedConversionList, setUpdatedConversionList] = useState([...conversionList]);
 
-  useEffect(() => {
-    const unlisten = async () => {
-      await listen('Started-File', (event) => {
+  useEffect((): void => {
+    const unlisten = () => {
+      listen('Started-File', (event) => {
         // Update the conversion list when the 'Started-File' event is emitted
-        const { file, workerCounter, task } = event.payload;
+        const { file, workerCounter, task } = event.payload as { file: any; workerCounter: number; task: string };
         // Update the conversion list based on the received event data
         // Example logic: Add the file to the conversion list
-        setUpdatedConversionList((prevList) => [...prevList, file]);
+        setUpdatedConversionList((prevList) => [...prevList, { ...file }]);
       });
     };
 
     unlisten(); // Call the function to start listening for the event
 
     // Clean up the listener when the component is unmounted
-    return () => unlisten();
+    return; //() => unlisten();
   }, []); // Empty dependency array ensures the effect runs only once
   const [clipPaths, setClipPaths] = useState(false);
 
