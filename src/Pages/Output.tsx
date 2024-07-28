@@ -13,7 +13,6 @@ const Output = () => {
     // let conversionList = state;
     let  [conversionList, setConversionList] = useState(state)
     console.log("conversionListO", conversionList);
-
     
     const [loading, setLoading] = useState(false);
     const [conflicts, setConflicts] = useState([]);
@@ -21,8 +20,8 @@ const Output = () => {
     const [currentConflict, setCurrentConflict] = useState(null);
     const [showDialog, setShowDialog] = useState(false);
     console.log("conflict1", conflicts);
-    const updateConversionList = async ()=>{
-         const updatedConflicts = conversionList.filter((item) => item.duplicate === true);
+    const updateConversionList = async (updatedConflicts)=>{
+        updatedConflicts = conversionList.filter((item) => item.duplicate === true);
         console.log("updatedConflicts",updatedConflicts);
         setConflicts(updatedConflicts);
     }
@@ -63,7 +62,7 @@ const Output = () => {
                     return { item, duplicate: false };
             }
         } else {
-            console.log("itme not = currentFile");
+            console.log("item not = currentFile");
             
             return item;
         }
@@ -72,16 +71,13 @@ const Output = () => {
     // Set the updated conversionList state
     setConversionList(updatedList);
 };
-
-
     const handleClick = async () => {
-
         if (conflicts.length > 0) {
             console.log("Conflicts detected:", conflicts); // Log the detected conflicts
             const updatedConflicts = conversionList.filter((item) => item.duplicate === true);
             console.log("updatedConflicts",updatedConflicts);
         
-        setConflicts(updatedConflicts);
+            setConflicts(updatedConflicts);
             setCurrentConflict(conflicts[0]);
             console.log("Current conflict set:", conflicts[0]); // Log the current conflict set
             conflicts[0].duplicate = false;
@@ -91,11 +87,12 @@ const Output = () => {
             updateConversionList(updatedConflicts);
         } else {
             setLoading(true);
+            navigate("/Finished", { state: { loading: true } });
             try {
                 const { failedFiles, successfulFiles } = await convertFiles(conversionList, handleProgressUpdate);
                 setLoading(false);
                 console.log("failed and success", failedFiles, successfulFiles)
-                navigate("/Finished", { state: { failedFiles, successfulFiles } });
+                // navigate("/Finished", { state: { failedFiles, successfulFiles } });
             } catch (error) {
                 console.error("Error converting audio:", error);
                 setLoading(false);
@@ -122,7 +119,7 @@ const Output = () => {
                     conflicts={conflicts.length}
                     handleClick={() => handleClick()}
                 />
-                <Link to="/Finished">Go to Finished</Link>
+                <Link to="/Finished">(debug)Go to Finished</Link>
             </div>
         </>
     );

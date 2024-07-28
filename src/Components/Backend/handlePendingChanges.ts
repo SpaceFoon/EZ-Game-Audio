@@ -39,41 +39,44 @@ const handlePendingChanges = ({ pendingChanges, setPendingChanges }) => {
   };
 
   const handleChanges = async () => {
-    for (let f of pendingChanges) {
-      setQuestion(`what to do with file ${f.inputFile}?`);
-
-      const response = new Promise((res, rej) => {
-        ask.current.addEventListener("close", () =>
-          res(ask.current.returnValue)
-        );
-        ask.current.showModal();
-        if (rej) return console.error("Broke at const response");
-      });
-
-      const result = await response;
-      handleResponse(result, f);
-
-      console.log(pendingChanges);
-      return question;
-    }
+      if (!pendingChanges.length) return;
+      for (let f of pendingChanges) {
+          // Use the correct property name
+          // const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+          const response = new Promise((res, rej) => {
+              const dialog = document.querySelector('dialog');
+              if (!dialog) {
+                  return rej('Dialog element not found');
+              }
+          
+              dialog.addEventListener('close', () => res(dialog.returnValue));
+              dialog.showModal();
+          
+              if (rej) return console.error('Broke at const response');
+          });
+          const question = "ooooooooo"; // Add this line
+  
+          const result = await response;
+          handleResponse(result, f);
+  
+          console.log(pendingChanges);
+          return question;
+      }
   };
-  {
-    /* <dialog ref={dialog}>
-          <form>
-            <p>{question}</p>
-            <button value='o' onClick={handleDialogOption}>Overwrite</button>
-            <button value='oa' onClick={handleDialogOption}>Overwrite All</button>
-            <button value='r' onClick={handleDialogOption}>Rename</button>
-            <button value='ra' onClick={handleDialogOption}>Rename All</button>
-            <button value='s' onClick={handleDialogOption}>Skip</button>
-            <button value='sa' onClick={handleDialogOption}>Skip All</button>
-          </form>
-        </dialog> */
+
+  
+  function handleDialogOption(event) {
+    const dialog = document.querySelector('dialog');
+    if (dialog) {
+      dialog.returnValue = event.target.value;
+      dialog.close();
+    }
   }
+  
   // Call the handleChanges function
   handleChanges();
 
-  // Return JSX or null based on your use case
+
   return null;
 };
 

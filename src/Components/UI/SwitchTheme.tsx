@@ -3,7 +3,7 @@ import { SunIcon, MoonIcon } from '@radix-ui/react-icons';
 
 export default function SwitchTheme() {
     
-    const { colorScheme, toggleTheme } = useMantineColorScheme();
+    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
     const dark = colorScheme === 'dark';
 
     return (
@@ -11,7 +11,7 @@ export default function SwitchTheme() {
             <ActionIcon
              variant="outline"
              color={dark ? 'yellow' : 'blue'}
-             onClick={() => {toggleTheme()}}
+             onClick={() => {toggleColorScheme()}}
              title='Toggle Theme'
             >
                 {dark ? (

@@ -5,7 +5,7 @@ interface FinishedReportProps {
     successfulFiles?: string[];
 }
 
-const FailedFiles: React.FC<{ failedFiles: string[] }> = ({ failedFiles }) => (
+const FailedFiles: React.FC<FinishedReportProps> = ({ failedFiles = [] }) => (
     <div>
         <h2>Failed Files:</h2>
         <ul>
@@ -27,11 +27,7 @@ const SuccessfulFiles: React.FC<{ successfulFiles: string[] }> = ({ successfulFi
     </div>
 );
 
-const FinishedReport: React.FC<FinishedReportProps> = (failedFiles, successfulFiles) => {
-    // const failedFiles: string[] = ['file1.txt', 'file2.txt', 'file3.txt'];
-    // const completedFiles: string[] = ['file4.txt', 'file5.txt', 'file6.txt'];
-
-
+const FinishedReport: React.FC<FinishedReportProps> = ({ failedFiles = [], successfulFiles = [] }) => {
     return (
         <div>
             <FailedFiles failedFiles={failedFiles} />
