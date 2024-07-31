@@ -25,5 +25,4 @@ dist-ssr
 *.exe
 # Million Lint
 .million
-node_modules/.bin/tsc.cmd
-node_modules/.bin/tsc.cmd
+
