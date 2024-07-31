@@ -8,7 +8,7 @@ interface CBProps {
 }
 
 const ConvertButton:React.FC<CBProps> = ( {loading, conflicts, handleClick} ) => {
-    console.log("loading", loading);
+    // console.log("loading", loading);
               console.log("conflicts in ConvertButton", conflicts)
     return (
         <div>
@@ -16,7 +16,7 @@ const ConvertButton:React.FC<CBProps> = ( {loading, conflicts, handleClick} ) =>
                 <Loading />
             ) : (
                 <button onClick={handleClick}>
-                    {conflicts ? 'Handle Conflicts' : 'Convert'}
+                    {conflicts ? 'Handle Next Conflict' : 'Convert Files'}
                 </button>
             )}
         </div>
