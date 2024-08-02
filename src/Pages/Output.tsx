@@ -4,12 +4,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FinalList from '../Components/UI/3Output/FinalList';
 import ConvertButton from '../Components/UI/3Output/ConvertButton';
-// import convertFiles from '../Components/Backend/converterFiles';
+import convertFiles from '../Components/Backend/converterFiles';
 import ConflictDialog from '../Components/UI/3Output/ConflictDialog';
 
 const Output = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
+    // let conversionList = state;
     let  [conversionList, setConversionList] = useState(state)
     console.log("conversionListO", conversionList);
     
@@ -86,16 +87,16 @@ const Output = () => {
             updateConversionList(updatedConflicts);
         } else {
             setLoading(true);
-            navigate("/Finished", { state: { conversionList } });
-            // try {
-            //     const { failedFiles, successfulFiles } = await convertFiles(conversionList, handleProgressUpdate);
-            //     setLoading(false);
-            //     console.log("failed and success", failedFiles, successfulFiles)
-            //     // navigate("/Finished", { state: { failedFiles, successfulFiles } });
-            // } catch (error) {
-            //     console.error("Error converting audio:", error);
-            //     setLoading(false);
-            // }
+            navigate("/Finished", { state: { loading: true } });
+            try {
+                const { failedFiles, successfulFiles } = await convertFiles(conversionList, handleProgressUpdate);
+                setLoading(false);
+                console.log("failed and success", failedFiles, successfulFiles)
+                // navigate("/Finished", { state: { failedFiles, successfulFiles } });
+            } catch (error) {
+                console.error("Error converting audio:", error);
+                setLoading(false);
+            }
         }
     };
 
