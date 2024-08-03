@@ -10,7 +10,6 @@ import ConflictDialog from '../Components/UI/3Output/ConflictDialog';
 const Output = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    // let conversionList = state;
     let  [conversionList, setConversionList] = useState(state)
     console.log("conversionListO", conversionList);
     
@@ -25,17 +24,17 @@ const Output = () => {
         console.log("updatedConflicts",updatedConflicts);
         setConflicts(updatedConflicts);
     }
- useEffect(() => {
-    try{
-        console.log("cList", conversionList);
-        const updatedConflicts = conversionList.filter((item) => item.duplicate === true);
-        console.log("updatedConflicts",updatedConflicts);
-        
-        setConflicts(updatedConflicts);
-    } catch {
-        console.error("conversion list is null");
-    }
-}, [conversionList, state]); 
+    useEffect(() => {
+        try{
+            console.log("cList", conversionList);
+            const updatedConflicts = conversionList.filter((item) => item.duplicate === true);
+            console.log("updatedConflicts",updatedConflicts);
+            
+            setConflicts(updatedConflicts);
+        } catch {
+            console.error("conversion list is null");
+        }
+    }, [conversionList, state]); 
     const handleProgressUpdate = (update:any) => {
         setProgress((prevState) => ({ ...prevState, ...update }));
     };
@@ -47,14 +46,11 @@ const Output = () => {
         if (item === currentFile) {
             switch (response) {
                 case "Rename":
-                   console.log("|rename----|");
-
+                console.log("|rename----|");
                     // Update the outputFile property for renaming
                     return { ...item, outputFile: item.outputFile + "(2)",  duplicate: false };
-                    
                 case "Overwrite":
                     console.log("overwrite----");
-                    
                     // Update the duplicate property for overwriting
                     return { ...item, duplicate: false };
                 // Handle other response cases as needed
@@ -87,7 +83,7 @@ const Output = () => {
             updateConversionList(updatedConflicts);
         } else {
             setLoading(true);
-            navigate("/Finished", { state: { loading: true } });
+            navigate("/Finished", { state: { conversionList } });
             try {
                 const { failedFiles, successfulFiles } = await convertFiles(conversionList, handleProgressUpdate);
                 setLoading(false);

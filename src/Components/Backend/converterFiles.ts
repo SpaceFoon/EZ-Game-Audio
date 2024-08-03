@@ -31,12 +31,11 @@ const convertFiles = async (conversionList: File[], onProgressUpdate: (update: P
     );
     await emit('Started-File', { file: file, workerCounter: workerCounter, task: task });
     //const workerStartTime = perform.now();
-//     const resourcePath = await resolveResource('ffmpeg-x86_64-pc-windows-msvc.exe');
-// console.log("resource--------",resourcePath);
-// if (await exists(resourcePath)){
-//   console.log("yes")
-// }else {console.log("no", {dir:  BaseDirectory});};
-
+    //     const resourcePath = await resolveResource('ffmpeg-x86_64-pc-windows-msvc.exe');
+    // console.log("resource--------",resourcePath);
+    // if (await exists(resourcePath)){
+    //   console.log("yes")
+    // }else {console.log("no", {dir:  BaseDirectory});};
 
 return new Promise<void>((resolve, reject) => {
     async function callRustFunction() {
@@ -48,15 +47,16 @@ return new Promise<void>((resolve, reject) => {
                 outputFile: file.outputFile,
                 outputFormat: file.outputFormat,
             });
-            
             console.log("Result from Rust:", result);
 
             if (result !== undefined && result !== null && result.exit_code !== 0) {
               successfulFiles.push(result[1]);
               onProgressUpdate({ successfulFile: '', failedFile: result.output_file }); // Include successfulFile property
+              await emit('File-Success', { file: file, workerCounter: workerCounter, task: task });
 
             }else if (result === 0){
               failedFiles.push(result[1]);
+              await emit('File-Failed', { file: file, workerCounter: workerCounter, task: task });
               onProgressUpdate({ successfulFile: result.output_file, failedFile: '' }); // Include failedFile property
             }
             resolve();
@@ -82,9 +82,10 @@ callRustFunction();
             workerCounter++;
             if (workerCounter > maxConcurrentWorkers) workerCounter = workerCounter - maxConcurrentWorkers;
             if (file){
-            await processFile(file, workerCounter, task, tasksLeft);
+              await processFile(file, workerCounter, task, tasksLeft);
             }
           } catch (error) {
+            // await emit('Error', { file: file, workerCounter: workerCounter, task: task });
             console.error("ERROR", error);
           }
         }
@@ -93,7 +94,7 @@ callRustFunction();
   }
 
   await Promise.all(workerPromises);
-  console.log("FS", failedFiles, successfulFiles)
+  console.log("FS", failedFiles, successfulFiles);
   return { failedFiles, successfulFiles };
 };
 
