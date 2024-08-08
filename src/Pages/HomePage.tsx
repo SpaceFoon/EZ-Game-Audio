@@ -13,6 +13,8 @@ import StartButton from "../Components/UI/1Home/StartButton";
 import searchFiles from "../Components/Backend/searchFiles";
 /**
  * This function is the main component of the application, which is the home page.
+ * TODO: add drop zone for files and folders
+ * 
  * @returns {JSX.Element}
  */
 const HomePage = (): JSX.Element =>{

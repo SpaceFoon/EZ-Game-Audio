@@ -14,6 +14,8 @@ export default function App() {
     <Routes>
         <Route path ='/' element={<HomePage />} />
         <Route path ='HomePage' element={<HomePage />} />
+        //defer the loading of the Input, Output and Finished pages
+
         <Route path="/Input" element={<Input />} />
         <Route path="/Output" element={<Output />} />
         <Route path="/Finished" element={<Finished/>} />

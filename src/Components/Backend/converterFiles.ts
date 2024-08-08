@@ -43,22 +43,29 @@ return new Promise<void>((resolve, reject) => {
           try {
             //console.log("file", file)
             const result:any = await invoke("my_rust_function", {
+
                 inputFile: file.inputFile,
                 outputFile: file.outputFile,
                 outputFormat: file.outputFormat,
             });
             console.log("Result from Rust:", result);
 
-            if (result !== undefined && result !== null && result.exit_code !== 0) {
+            if (result[2] === 0) {
+              // console.log("Exit code:------------------------", result[2], result[1]), result[3];
+              
               successfulFiles.push(result[1]);
-              onProgressUpdate({ successfulFile: '', failedFile: result.output_file }); // Include successfulFile property
+              // onProgressUpdate({ successfulFile: '', failedFile: result.output_file });
               await emit('File-Success', { file: file, workerCounter: workerCounter, task: task });
 
-            }else if (result === 0){
+            }else {
+              // console.log("Exit code:------------------------", result[2], result[1]), result[3];
+              // console.log("Failed to convert file:--------------------------------------", file);
+              
               failedFiles.push(result[1]);
               await emit('File-Failed', { file: file, workerCounter: workerCounter, task: task });
-              onProgressUpdate({ successfulFile: result.output_file, failedFile: '' }); // Include failedFile property
+              // onProgressUpdate({ successfulFile: result.output_file, failedFile: '' });
             }
+
             resolve();
         } catch (error) {
             console.error("Error calling Rust function:", error);
